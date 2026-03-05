@@ -1,7 +1,7 @@
 let DADOS_PLANILHA = [];
 let pathSelecionado = null;
 
-// Mapeamento de Colunas (Confirme se batem com sua DashboardMRV_SP_2)
+// Mapeamento de Colunas (A=0, B=1, C=2...)
 const COL = {
     ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, END: 4, BAIRRO: 5, CIDADE: 6,
     ENTREGA: 7, PRECO: 8, P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12, OBS: 13,
@@ -41,7 +41,10 @@ async function carregarPlanilha() {
             };
         }).filter(item => item !== null);
 
-        if (typeof gerarListaLateral === 'function') gerarListaLateral();
+        // ESSA LINHA É QUE FAZ OS BOTÕES APARECEREM
+        if (typeof gerarListaLateral === 'function') {
+            gerarListaLateral();
+        }
     } catch (e) { console.error("Erro planilha:", e); }
 }
 
@@ -67,7 +70,6 @@ function desenharIniciais() {
 }
 
 function cliqueNoMapa(idPath) {
-    // FILTRAR TODOS os imóveis desta cidade
     const imoveis = DADOS_PLANILHA.filter(d => d.id_path === idPath.toLowerCase() && d.tipo !== 'N');
     
     const el = document.getElementById(idPath);
@@ -75,7 +77,6 @@ function cliqueNoMapa(idPath) {
 
     const painel = document.getElementById('ficha-tecnica');
     if (imoveis.length > 0) {
-        // Gera múltiplos cards um abaixo do outro
         painel.innerHTML = imoveis.map(item => `
             <div class="ficha-card">
                 <div class="ficha-header">
