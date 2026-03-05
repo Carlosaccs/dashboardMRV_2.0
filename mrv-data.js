@@ -1,4 +1,4 @@
-// ---DADOS DO MAPA---
+// ---DADOS DO MAPA GRANDE SP---
 const MAPA_GSP = {
     viewBox: "80 -10 490 310",
     transform: "translate(110, 10) scale(0.2645)",
