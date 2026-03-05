@@ -2,60 +2,36 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP v4.0</title>
+    <title>Dashboard MRV SP - Desktop</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Header e Cores */
-        .header { background: #065e03; color: white; padding: 10px; text-align: center; font-weight: bold; }
+        /* Apenas ajustes de layout específicos do Desktop */
+        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .header { background: var(--mrv-verde); color: white; padding: 10px; text-align: center; font-weight: bold; }
         .wrapper { display: flex; flex: 1; overflow: hidden; }
-
-        /* Coluna Esquerda: Listagem */
-        .sidebar-esq { width: 20%; border-right: 1px solid #ddd; overflow-y: auto; padding: 10px; background: #f9f9f9; }
-        .item-grupo { background: #333; color: #fff; padding: 6px; font-size: 0.7rem; text-align: center; margin: 10px 0 5px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
-        
-        .btn-res { width: 100%; padding: 8px; margin-bottom: 4px; border: 1px solid #eee; border-left: 5px solid #065e03; border-radius: 4px; background: white; cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; }
-        .btn-res:hover { background: #f0f0f0; }
-        .btn-res.ativo { border-left-color: #ff8c00; background: #fff5e6; }
-        .btn-res.tipo-L { border-left-color: #007bff; }
-        
-        /* Badges */
-        .badge-L { color: #007bff; font-size: 0.6rem; font-weight: bold; }
-        .badge-R { color: #666; font-size: 0.6rem; }
-        .badge-V { color: #999; text-decoration: line-through; font-size: 0.6rem; }
-
-        /* Centro: Mapas */
+        .sidebar-esq { width: 22%; border-right: 1px solid var(--cinza-borda); overflow-y: auto; padding: 10px; background: var(--cinza-fundo); }
         .conteudo-centro { flex: 1; display: flex; flex-direction: column; position: relative; }
         .mapa-container { flex: 1; position: relative; }
-        svg { width: 100%; height: 100%; }
-        path { fill: #ccc; stroke: #fff; stroke-width: 0.5; transition: 0.3s; }
-        .commrv { fill: #065e03; cursor: pointer; }
-        .path-ativo { fill: #ff8c00 !important; stroke: #000 !important; stroke-width: 1.5; }
-
-        /* Direita: Ficha Técnica */
-        .sidebar-dir { width: 30%; border-left: 1px solid #ddd; overflow-y: auto; padding: 15px; }
-        .ficha-header { border-bottom: 2px solid #ff8c00; margin-bottom: 10px; padding-bottom: 5px; }
-        .ficha-header h2 { font-size: 1.1rem; color: #065e03; }
+        .sidebar-dir { width: 30%; border-left: 1px solid var(--cinza-borda); overflow-y: auto; padding: 20px; }
+        
+        .ficha-header h2 { color: var(--mrv-verde); margin-bottom: 5px; }
         .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
-        .info-box { font-size: 0.8rem; background: #f4f4f4; padding: 8px; border-radius: 4px; }
-        .info-box label { display: block; font-size: 0.6rem; color: #888; text-transform: uppercase; font-weight: bold; }
-
-        /* Links */
-        .btn-link { display: inline-block; padding: 5px 10px; background: #065e03; color: white; text-decoration: none; border-radius: 3px; font-size: 0.75rem; margin: 2px; }
+        .info-box { background: #f4f4f4; padding: 10px; border-radius: 4px; font-size: 0.85rem; }
+        .info-box label { display: block; font-size: 0.65rem; color: #888; text-transform: uppercase; font-weight: bold; }
+        .btn-link { display: inline-block; padding: 8px 15px; background: var(--mrv-verde); color: white; text-decoration: none; border-radius: 4px; font-size: 0.8rem; margin: 5px 5px 0 0; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - DASHBOARDMRV_SP_2</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE</div>
 
 <div class="wrapper">
-    <aside class="sidebar-esq" id="lista-imoveis"></aside>
+    <aside class="sidebar-esq" id="lista-imoveis">Carregando...</aside>
     
     <main class="conteudo-centro">
-        <div id="cidade-titulo" style="padding:10px; text-align:center; font-weight:bold; background:#eee;">Selecione uma região</div>
+        <div id="cidade-titulo" style="padding:10px; text-align:center; font-weight:bold; background:#eee;">Selecione uma cidade no mapa</div>
         <div class="mapa-container" id="container-mapas">
-            <div id="caixa-a"></div>
+            <div id="caixa-a" style="height: 100%;"></div>
         </div>
     </main>
 
@@ -63,6 +39,8 @@
         <p style="color:#999; text-align:center; margin-top:50px;">Selecione um residencial para ver os detalhes.</p>
     </aside>
 </div>
+
+<div id="toast">Copiado!</div>
 
 <script src="mrv-data.js"></script>
 <script src="mrv-engine.js"></script>
@@ -78,24 +56,31 @@
                 list.appendChild(div);
             } else {
                 const btn = document.createElement('button');
-                btn.className = `btn-res tipo-${item.tipo}`;
+                btn.className = `btRes tipo-${item.tipo}`;
                 btn.innerHTML = `<div><strong>${item.nome}</strong><br><small>${item.cidade}</small></div> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 btn.onclick = () => selecionar(item, btn);
                 list.appendChild(btn);
             }
         });
+        desenharIniciais();
     }
 
     function selecionar(item, btn) {
-        // Remove destaques anteriores
-        document.querySelectorAll('.btn-res').forEach(b => b.classList.remove('ativo'));
+        document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
         btn.classList.add('ativo');
 
-        // Atualiza Ficha
+        const path = document.getElementById(item.id_path);
+        if(path) {
+            if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
+            path.classList.add('path-ativo');
+            pathSelecionado = path;
+            document.getElementById('cidade-titulo').innerText = path.getAttribute('name');
+        }
+
         document.getElementById('ficha-tecnica').innerHTML = `
             <div class="ficha-header">
                 <h2>${item.nome}</h2>
-                <p>📍 ${item.endereco}</p>
+                <p>📍 <strong>${item.bairro}</strong><br><small>${item.endereco}</small></p>
             </div>
             <div class="ficha-grid">
                 <div class="info-box"><label>💰 Preço</label>${item.preco}</div>
@@ -103,23 +88,15 @@
                 <div class="info-box"><label>📐 Plantas</label>${item.plantas}</div>
                 <div class="info-box"><label>🏗️ Obra</label>${item.obra}%</div>
             </div>
-            <div class="info-box" style="margin-bottom:10px;"><label>💡 Dica</label>${item.dica}</div>
-            <h3>Downloads</h3>
-            <div style="margin-top:10px;">
+            <div class="info-box" style="margin-bottom:10px;"><label>💡 Dica do Corretor</label>${item.dica}</div>
+            <div style="margin-top:20px;">
                 ${item.links.bookCli ? `<a href="${item.links.bookCli}" target="_blank" class="btn-link">📄 Book Cliente</a>` : ''}
-                ${item.links.bookCor ? `<a href="${item.links.bookCor}" target="_blank" class="btn-link">🔐 Book Corretor</a>` : ''}
-                ${item.links.vid1 ? `<a href="${item.links.vid1}" target="_blank" class="btn-link">🎥 Vídeo</a>` : ''}
+                ${item.links.vid1 ? `<a href="${item.links.vid1}" target="_blank" class="btn-link" style="background:var(--mrv-laranja)">🎥 Vídeo</a>` : ''}
             </div>
         `;
     }
 
-    window.onload = () => {
-        carregarPlanilha();
-        // Aqui chamamos a função de desenhar o mapa do seu mrv-data.js
-        if(typeof MAPA_GSP !== 'undefined') {
-            // lógica para desenhar o SVG no desktop
-        }
-    };
+    window.onload = iniciarApp;
 </script>
 </body>
 </html>
