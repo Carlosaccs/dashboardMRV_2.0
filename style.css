@@ -1,6 +1,6 @@
 :root {
     --mrv-verde: #065e03;
-    --mrv-verde-hover: #0a8a05;
+    --mrv-verde-hover: #ff8c00; /* Hover agora é Laranja */
     --mrv-laranja: #ff8c00;
     --cinza-mapa: #999999;
     --texto-escuro: #333;
@@ -19,7 +19,7 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
     border: 1px solid #eee; border-left: 4px solid var(--mrv-verde); 
     text-align: left; cursor: pointer; border-radius: 4px;
     display: flex; justify-content: space-between; align-items: center; 
-    font-size: 0.72rem; transition: 0.2s;
+    font-size: 0.72rem; transition: 0.1s;
 }
 .btRes strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
 .btRes.ativo { background: #fff5e6 !important; border-left-color: var(--mrv-laranja) !important; font-weight: bold; }
@@ -27,16 +27,17 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 .conteudo-centro { flex: 1; display: flex; flex-direction: column; }
 #cidade-titulo { background: #eee; padding: 8px; text-align: center; font-weight: bold; font-size: 0.75rem; color: #555; height: 35px; display: flex; align-items: center; justify-content: center; }
 
-#caixa-a { flex: 1.3; border-bottom: 2px solid #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 15px; }
-#caixa-b { flex: 0.45; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 5px; background: #f2f2f2; }
+#caixa-a { flex: 1.3; border-bottom: 2px solid #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; }
+/* Caixa de baixo sem fundo cinza */
+#caixa-b { flex: 0.45; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 5px; background: white; }
 
 svg { width: 100%; height: 100%; }
 path { fill: var(--cinza-mapa); stroke: #ffffff; stroke-width: 0.8; transition: 0.2s; pointer-events: all; }
 
-/* Interação apenas para quem tem MRV */
+/* REGRAS DE CORES E HOVER */
 #caixa-a path.commrv { fill: var(--mrv-verde); cursor: pointer; }
-#caixa-a path.commrv:hover { fill: var(--mrv-verde-hover) !important; }
-path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000; stroke-width: 1.5px; }
+#caixa-a path:hover { fill: var(--mrv-laranja) !important; cursor: pointer; }
+path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000 !important; stroke-width: 1.8px !important; }
 
 .sidebar-dir { width: 30%; border-left: 1px solid #ddd; overflow-y: auto; padding: 15px; }
 .vitrine-topo { background: var(--mrv-verde); color: white; padding: 8px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 15px; font-size: 0.75rem; }
