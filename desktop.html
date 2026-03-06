@@ -2,26 +2,19 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP v6.1</title>
+    <title>Dashboard MRV SP v6.2</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Ajuste de altura específico das caixas */
-        #caixa-a { flex: 1.25; border-bottom: 2px solid #eee; overflow: hidden; position: relative; }
-        #caixa-b { flex: 0.6; overflow: hidden; opacity: 0.8; position: relative; }
-    </style>
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.1</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.2</div>
 
 <div class="wrapper">
     <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
     
     <main class="conteudo-centro">
         <div id="cidade-titulo">SELECIONE UMA REGIÃO NO MAPA</div>
-        <div class="mapa-container">
-            <div id="caixa-a"></div> <div id="caixa-b"></div> </div>
-    </main>
+        <div id="caixa-a"></div> <div id="caixa-b"></div> </main>
 
     <aside class="sidebar-dir" id="ficha-tecnica">
         <div style="text-align:center; color:#ccc; margin-top:100px;">
@@ -49,16 +42,13 @@
                 btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
                 btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 btn.onclick = () => {
-                    const cidade = DADOS_PLANILHA.filter(i => i.id_path === item.id_path);
-                    const path = document.getElementById(`caixa-a-${item.id_path}`);
-                    if(path) cliqueNoMapa(item.id_path, path.getAttribute('name'));
-                    montarVitrine(item, cidade, item.cidade);
+                    // Chama a função central que resolve a troca de mapa se necessário
+                    comandoSelecao(item.id_path, item.cidade, item);
                 };
                 list.appendChild(btn);
             }
         });
     }
-    // Inicia o app
     window.onload = iniciarApp;
 </script>
 </body>
