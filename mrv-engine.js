@@ -1,6 +1,6 @@
 let DADOS_PLANILHA = [];
 let pathSelecionado = null;
-let mapaAtivo = 'GSP'; // 'GSP' ou 'INTERIOR'
+let mapaAtivo = 'GSP'; // Inicia com Grande SP em cima
 
 const COL = {
     ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, END: 4, BAIRRO: 5, CIDADE: 6,
@@ -8,7 +8,6 @@ const COL = {
 };
 
 async function iniciarApp() {
-    console.log("Iniciando App...");
     await carregarPlanilha();
 }
 
@@ -18,7 +17,6 @@ async function carregarPlanilha() {
         const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
         const texto = await response.text();
         const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
-        
         DADOS_PLANILHA = linhas.slice(1).map(linha => {
             const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
             return {
@@ -38,13 +36,9 @@ async function carregarPlanilha() {
             };
         }).filter(i => i.nome);
 
-        console.log("Dados carregados:", DADOS_PLANILHA.length);
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
-        desenharMapas(); // Agora desenha com segurança
-    } catch (e) {
-        console.error("Erro ao carregar planilha:", e);
-        document.getElementById('lista-imoveis').innerText = "Erro ao carregar dados.";
-    }
+        desenharMapas();
+    } catch (e) { console.error("Erro:", e); }
 }
 
 function desenharMapas() {
@@ -65,7 +59,9 @@ function renderizarNoContainer(id, dados, interativo) {
         return `<path id="${id}-${p.id}" name="${p.name}" d="${p.d}" class="${temMRV && interativo ? 'commrv' : ''}" ${acoes}></path>`;
     }).join('');
 
-    container.innerHTML = `<svg viewBox="${dados.viewBox}" style="width:100%; height:100%; transform: ${interativo ? 'scale(1.1)' : 'scale(1)'}; transform-origin: center;">
+    // Mapa de baixo renderizado 30% menor conforme solicitado
+    const zoom = interativo ? 'scale(1)' : 'scale(0.7)';
+    container.innerHTML = `<svg viewBox="${dados.viewBox}" style="transform: ${zoom}; transform-origin: center;">
         <g transform="${dados.transform || ''}">${pathsHtml}</g>
     </svg>`;
     
@@ -75,6 +71,11 @@ function renderizarNoContainer(id, dados, interativo) {
 
 function trocarMapas() {
     mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP';
+    limparSelecao();
+    desenharMapas();
+}
+
+function limparSelecao() {
     pathSelecionado = null;
     document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
     document.getElementById('cidade-titulo').innerText = "SELECIONE UMA REGIÃO NO MAPA";
@@ -83,37 +84,52 @@ function trocarMapas() {
             <p style="font-size:30px;">📍</p>
             <p>Clique num residencial ou em uma região verde do mapa</p>
         </div>`;
-    desenharMapas();
 }
 
 function hoverNoMapa(nome) {
     if (!pathSelecionado) document.getElementById('cidade-titulo').innerText = nome;
 }
 
-function cliqueNoMapa(idPath, nomePath) {
-    const imoveis = DADOS_PLANILHA.filter(d => d.id_path === idPath.toLowerCase());
+// NOVA LOGICA: Acionada tanto pelo mapa quanto pelos botões da esquerda
+function comandoSelecao(idPath, nomePath, fonte) {
+    // 1. Verifica se o path pertence ao mapa que está embaixo
+    const estaNoGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
+    const estaNoInterior = MAPA_INTERIOR.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
+
+    if ((estaNoGSP && mapaAtivo !== 'GSP') || (estaNoInterior && mapaAtivo !== 'INTERIOR')) {
+        trocarMapas();
+    }
+
+    // 2. Agora destaca o path (que agora certamente está na caixa-a)
     const el = document.getElementById(`caixa-a-${idPath}`);
-    
     if (el) {
         if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
         el.classList.add('path-ativo');
         pathSelecionado = el;
     }
+
     document.getElementById('cidade-titulo').innerText = nomePath;
     
+    const imoveis = DADOS_PLANILHA.filter(d => d.id_path === idPath.toLowerCase());
     if (imoveis.length > 0) {
-        const ordenados = imoveis.sort((a, b) => a.nome.localeCompare(b.nome));
-        montarVitrine(ordenados[0], ordenados, nomePath);
+        // Se a fonte for o mapa, seleciona o primeiro. Se for botão, o botão será marcado no montarVitrine
+        const selecionado = (typeof fonte === 'object') ? fonte : imoveis.sort((a,b) => a.nome.localeCompare(b.nome))[0];
+        montarVitrine(selecionado, imoveis, nomePath);
     }
+}
+
+// Mantido para compatibilidade com os cliques diretos no SVG
+function cliqueNoMapa(id, nome) {
+    comandoSelecao(id, nome, 'mapa');
 }
 
 function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const painel = document.getElementById('ficha-tecnica');
     const outros = listaDaCidade.filter(i => i.nome !== selecionado.nome);
     
-    // Sincroniza o botão da esquerda
     document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-    const btnEsq = document.getElementById(`btn-esq-${selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-')}`);
+    const idLimpo = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
+    const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
     if (btnEsq) btnEsq.classList.add('ativo');
 
     painel.innerHTML = `
@@ -133,7 +149,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
             <div class="ficha-grid">
                 <div class="info-box"><label>💰 Preço</label><span>${selecionado.preco}</span></div>
                 <div class="info-box"><label>🔑 Entrega</label><span>${selecionado.entrega}</span></div>
-                <div class="info-box"><label>📐 Plantas</label><span>${selecionado.plantas || 'Consulte'}</span></div>
+                <div class="info-box"><label>📐 Plantas</label><span>${selecionado.plantas}</span></div>
                 <div class="info-box"><label>🏗️ Obra</label><span>${selecionado.obra}%</span></div>
             </div>
             <div class="info-box" style="background:#fff5e6; margin-top:10px; border-left: 3px solid var(--mrv-laranja);">
