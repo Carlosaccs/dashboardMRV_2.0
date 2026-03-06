@@ -2,83 +2,67 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP - Desktop v5.0</title>
+    <title>Dashboard MRV SP v6.0</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #fff; }
+        body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .header { background: var(--mrv-verde); color: white; padding: 10px; text-align: center; font-weight: bold; }
         .wrapper { display: flex; flex: 1; overflow: hidden; }
-        .sidebar-esq { width: 22%; border-right: 1px solid var(--cinza-borda); overflow-y: auto; padding: 10px; background: var(--cinza-fundo); }
-        .conteudo-centro { flex: 1; display: flex; flex-direction: column; }
-        .mapa-container { flex: 1; display: flex; flex-direction: column; padding: 10px; gap: 10px; overflow: hidden; }
-        #caixa-a { flex: 1.5; border-bottom: 1px solid #eee; position: relative; min-height: 300px; }
-        #caixa-b { flex: 1; position: relative; min-height: 200px; }
-        .sidebar-dir { width: 30%; border-left: 1px solid var(--cinza-borda); overflow-y: auto; padding: 15px; background: #fdfdfd; }
+        .sidebar-esq { width: 20%; border-right: 1px solid var(--cinza-borda); overflow-y: auto; padding: 10px; background: var(--cinza-fundo); }
         
-        .ficha-card { background: white; border-radius: 6px; padding: 15px; margin-bottom: 20px; border-left: 5px solid var(--mrv-verde); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
-        .info-box { background: #f4f4f4; padding: 8px; border-radius: 4px; font-size: 0.8rem; }
-        .info-box label { display: block; font-size: 0.6rem; color: #888; text-transform: uppercase; font-weight: bold; }
-        .dica-box { background: #fff5e6; padding: 8px; border-radius: 4px; margin-top: 5px; border-left: 3px solid var(--mrv-laranja); }
-        .btn-link { display: block; width: 100%; text-align: center; padding: 10px; background: var(--mrv-verde); color: white; text-decoration: none; border-radius: 4px; font-weight: bold; margin-top: 10px; font-size: 0.8rem; }
+        /* AJUSTE DE PROPORÇÃO DOS MAPAS */
+        .conteudo-centro { flex: 1; display: flex; flex-direction: column; }
+        #caixa-a { flex: 1.25; border-bottom: 2px solid #eee; padding: 10px; } /* Aumentado em 25% */
+        #caixa-b { flex: 0.6; padding: 5px; opacity: 0.8; pointer-events: none; } /* Diminuído 40% e sem clique */
+        
+        .sidebar-dir { width: 30%; border-left: 1px solid var(--cinza-borda); overflow-y: auto; padding: 15px; }
+        #cidade-titulo { background: #eee; padding: 8px; text-align: center; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v5.0</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.0</div>
 
 <div class="wrapper">
-    <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
+    <aside class="sidebar-esq" id="lista-imoveis">Carregando...</aside>
     
     <main class="conteudo-centro">
-        <div id="cidade-titulo" style="padding:10px; text-align:center; font-weight:bold; background:#eee; font-size: 0.75rem;">SELECIONE UMA REGIÃO NO MAPA</div>
-        <div class="mapa-container">
-            <div id="caixa-a"></div> <div id="caixa-b"></div> </div>
-    </main>
+        <div id="cidade-titulo">Selecione uma região</div>
+        <div id="caixa-a"></div> <div id="caixa-b"></div> </main>
 
     <aside class="sidebar-dir" id="ficha-tecnica">
         <div style="text-align:center; color:#ccc; margin-top:100px;">
             <p style="font-size: 40px;">📍</p>
-            <p>Selecione uma cidade verde no mapa para ver todos os empreendimentos.</p>
+            <p>Clique no mapa principal para ver os empreendimentos.</p>
         </div>
     </aside>
 </div>
-
-<div id="toast">Copiado!</div>
 
 <script src="mrv-data.js"></script>
 <script src="mrv-engine.js"></script>
 <script>
     function gerarListaLateral() {
         const list = document.getElementById('lista-imoveis');
-        if (!list) return;
         list.innerHTML = "";
-        
         DADOS_PLANILHA.forEach(item => {
             if (item.tipo === 'N') {
-                const div = document.createElement('div');
-                div.className = 'item-grupo';
-                div.innerText = item.nome;
-                list.appendChild(div);
+                list.innerHTML += `<div class="item-grupo">${item.nome}</div>`;
             } else {
                 const btn = document.createElement('button');
-                btn.className = `btRes tipo-${item.tipo}`;
+                btn.className = `btRes`;
                 btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                btn.innerHTML = `<div><strong>${item.nome}</strong><br><small>${item.cidade}</small></div> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
+                btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 btn.onclick = () => {
-                    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-                    btn.classList.add('ativo');
-                    // Chama a função de vitrine no mapa
-                    cliqueNoMapa(item.id_path);
-                    // Faz scroll até o card na direita (opcional)
-                    document.getElementById('ficha-tecnica').scrollTop = 0;
+                    const cidade = DADOS_PLANILHA.filter(i => i.id_path === item.id_path);
+                    const path = document.getElementById(`caixa-a-${item.id_path}`);
+                    if(path) destacarNoMapa(path);
+                    montarVitrine(item, cidade);
                 };
                 list.appendChild(btn);
             }
         });
+        desenharIniciais();
     }
-
-    // Inicia o App assim que a página carrega
     window.onload = iniciarApp;
 </script>
 </body>
