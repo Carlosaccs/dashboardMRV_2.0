@@ -1,115 +1,110 @@
-let DADOS_BASE = [];
+let DADOS_PLANILHA = [];
 let mapaAtivo = 'GSP';
+let pathSelecionado = null;
 
-// Colunas exatas
-const COL = { ID: 0, NOME: 2, EST: 3, PRECO: 8, ENTREGA: 7, OBRA: 11, DICA: 12, BK_CLI: 19, BK_COR: 20, LOC: 34, IMP: 35 };
+// COLUNAS EXATAS DA SUA PLANILHA
+const COL = {
+    ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, PRECO: 8, ENTREGA: 7, OBRA: 11, DICA: 12,
+    BK_CLI: 19, BK_COR: 20, LOC: 34, IMPLANT: 35
+};
 
 async function iniciarApp() {
-    const URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzECvkefpM6aWy0IacqqI6l84_ti6zS1lSjcrgL0J4OcrtWZLb63sh7U1ZTQ4nsqDMeTU5ykl8xtDe/pub?output=csv";
+    const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzECvkefpM6aWy0IacqqI6l84_ti6zS1lSjcrgL0J4OcrtWZLb63sh7U1ZTQ4nsqDMeTU5ykl8xtDe/pub?output=csv";
     try {
-        const res = await fetch(`${URL}&nocache=${Date.now()}`);
-        const csv = await res.text();
-        const linhas = csv.split(/\r?\n/).filter(l => l.split(',').length > 5);
+        const res = await fetch(`${URL_CSV}&v=${Date.now()}`);
+        const texto = await res.text();
+        const linhas = texto.split(/\r?\n/).filter(l => l.length > 10);
         
-        DADOS_BASE = linhas.slice(1).map(linha => {
+        DADOS_PLANILHA = linhas.slice(1).map(linha => {
             const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
             return {
-                id: (c[COL.ID] || "").toLowerCase(),
+                id_path: (c[COL.ID] || "").toLowerCase(),
+                tipo: c[COL.TIPO],
                 nome: c[COL.NOME],
-                estoque: c[COL.EST],
+                estoque: c[COL.ESTOQUE],
                 preco: c[COL.PRECO],
                 entrega: c[COL.ENTREGA],
                 obra: c[COL.OBRA],
                 dica: c[COL.DICA],
-                links: [
-                    { t: "Book Cliente", u: converterDrive(c[COL.BK_CLI]) },
-                    { t: "Book Corretor", u: converterDrive(c[COL.BK_COR]) },
-                    { t: "Localização", u: converterDrive(c[COL.LOC]) },
-                    { t: "Implantação", u: converterDrive(c[COL.IMP]) }
+                materiais: [
+                    { label: "Book Cliente", url: limparLink(c[COL.BK_CLI]) },
+                    { label: "Book Corretor", url: limparLink(c[COL.BK_COR]) },
+                    { label: "Localização", url: limparLink(c[COL.LOC]) },
+                    { label: "Implantação", url: limparLink(c[COL.IMPLANT]) }
                 ]
             };
-        }).filter(d => d.id);
+        }).filter(d => d.nome);
 
-        render();
-    } catch (e) {
-        document.getElementById('lista-imoveis').innerHTML = "Erro ao carregar CSV.";
-    }
+        gerarListaLateral();
+        desenharMapas();
+    } catch (e) { console.error("Erro carga:", e); }
 }
 
-function render() {
-    // Lista Lateral
-    const list = document.getElementById('lista-imoveis');
-    list.innerHTML = DADOS_BASE.map(d => `
-        <button class="btRes" id="btn-${d.id}" onclick="selecionar('${d.id}')">
-            <b>${d.nome}</b> <span>${d.estoque} UN</span>
-        </button>
-    `).join('');
-    
-    desenhar();
+function limparLink(url) {
+    if(!url || !url.includes('drive.google.com')) return url;
+    const match = url.match(/\/d\/(.+?)\//);
+    return match ? `https://drive.google.com/file/d/${match[1]}/preview` : url;
 }
 
-function desenhar() {
+function desenharMapas() {
     const p = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
     const s = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
-    
-    document.getElementById('caixa-a').innerHTML = gerarSVG(p, true);
-    document.getElementById('caixa-b').innerHTML = gerarSVG(s, false);
+    renderSVG('caixa-a', p, true);
+    renderSVG('caixa-b', s, false);
 }
 
-function gerarSVG(dados, interativo) {
-    const pths = dados.paths.map(p => {
-        const idL = p.id.toLowerCase();
-        const tem = DADOS_BASE.some(d => d.id === idL);
-        const clk = interativo ? `onclick="selecionar('${p.id}')"` : `onclick="trocar()"`;
-        return `<path id="${p.id}" d="${p.d}" class="${tem && interativo ? 'commrv' : ''}" ${clk}></path>`;
+function renderSVG(containerId, dados, interativo) {
+    const container = document.getElementById(containerId);
+    const paths = dados.paths.map(p => {
+        const temMRV = DADOS_PLANILHA.some(d => d.id_path === p.id.toLowerCase());
+        const acao = interativo ? `onclick="comandoSelecao('${p.id}', '${p.name}')"` : `onclick="trocarMapa()"`;
+        return `<path id="${containerId}-${p.id}" d="${p.d}" class="${temMRV && interativo ? 'commrv' : ''}" ${acao}></path>`;
     }).join('');
-    return `<svg viewBox="${dados.viewBox}" preserveAspectRatio="xMidYMid meet">${pths}</svg>`;
+    container.innerHTML = `<svg viewBox="${dados.viewBox}">${paths}</svg>`;
 }
 
-function selecionar(id) {
-    id = id.toLowerCase();
-    document.querySelectorAll('path').forEach(p => p.classList.remove('path-ativo'));
-    const el = document.getElementById(id);
-    if(el) el.classList.add('path-ativo');
+function comandoSelecao(id, nome, objDireto = null) {
+    if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
+    const el = document.getElementById(`caixa-a-${id}`);
+    if (el) { el.classList.add('path-ativo'); pathSelecionado = el; }
 
-    const item = DADOS_BASE.find(d => d.id === id);
-    if(item) {
-        document.getElementById('cidade-titulo').innerText = item.nome;
-        document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-        const b = document.getElementById(`btn-${id}`);
-        if(b) b.classList.add('ativo');
-
-        const mats = item.links.map(l => {
-            if(!l.u || l.u.length < 20) return "";
-            return `
-                <div class="mat-row">
-                    <span style="font-size:0.65rem; font-weight:bold;">${l.t}</span>
-                    <div>
-                        <a href="${l.u}" target="_blank" class="btn-mrv abrir">Abrir</a>
-                        <button class="btn-mrv copiar" onclick="copiar('${l.u}')">Copiar</button>
-                    </div>
-                    <div class="preview-pop"><iframe src="${l.u}"></iframe></div>
-                </div>`;
-        }).join('');
-
-        document.getElementById('ficha-tecnica').innerHTML = `
-            <div class="card-header"><b>${item.nome}</b></div>
-            <div class="info-box"><label>VALOR</label><span>${item.preco}</span></div>
-            <div class="info-box"><label>ENTREGA</label><span>${item.entrega}</span></div>
-            <div class="info-box"><label>OBRA</label><span>${item.obra}%</span></div>
-            <div class="info-box" style="border-left:4px solid orange;"><label>DICA</label><p style="font-size:0.65rem;">${item.dica}</p></div>
-            <div style="margin-top:10px;">${mats}</div>
-        `;
-    }
+    document.getElementById('cidade-titulo').innerText = nome;
+    const item = objDireto || DADOS_PLANILHA.find(d => d.id_path === id.toLowerCase());
+    if (item) montarFicha(item);
 }
 
-function converterDrive(u) {
-    if(!u || !u.includes('drive.google.com')) return u;
-    const id = u.match(/\/d\/(.+?)\//) || u.match(/id=(.+?)(&|$)/);
-    return id ? `https://drive.google.com/file/d/${id[1]}/preview` : u;
+function montarFicha(item) {
+    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
+    const btn = document.getElementById(`btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`);
+    if(btn) btn.classList.add('ativo');
+
+    const htmlLinks = item.materiais.map(m => {
+        if(!m.url || m.url.length < 20) return "";
+        return `
+            <div class="mat-box">
+                <span style="font-size:0.65rem; font-weight:bold;">${m.label}</span>
+                <div>
+                    <a href="${m.url}" target="_blank" class="btn-acao btn-abrir">ABRIR</a>
+                    <button class="btn-acao btn-copiar" onclick="copiar('${m.url}')">COPIAR</button>
+                </div>
+                <div class="mini-preview"><iframe src="${m.url}"></iframe></div>
+            </div>`;
+    }).join('');
+
+    document.getElementById('ficha-tecnica').innerHTML = `
+        <div style="background:var(--mrv-laranja); color:white; padding:10px; border-radius:5px; margin-bottom:10px;">
+            <h2 style="font-size:1rem;">${item.nome}</h2>
+        </div>
+        <p style="font-size:0.75rem;"><b>Preço:</b> ${item.preco}</p>
+        <p style="font-size:0.75rem;"><b>Entrega:</b> ${item.entrega}</p>
+        <p style="font-size:0.75rem;"><b>Obra:</b> ${item.obra}%</p>
+        <div style="background:#fef9e7; padding:8px; border-left:4px solid orange; margin:10px 0; font-size:0.7rem;">
+            <strong>DICA:</strong> ${item.dica}
+        </div>
+        <div style="margin-top:15px;">${htmlLinks}</div>
+    `;
 }
 
-function copiar(u) { navigator.clipboard.writeText(u); alert("Link Copiado!"); }
-function trocar() { mapaAtivo = (mapaAtivo === 'GSP' ? 'INTERIOR' : 'GSP'); desenhar(); }
-
-window.onload = iniciarApp;
+function copiar(u) { navigator.clipboard.writeText(u); alert("Link copiado!"); }
+function trocarMapa() { mapaAtivo = (mapaAtivo === 'GSP' ? 'INTERIOR' : 'GSP'); desenharMapas(); }
+function obterHtmlEstoque(v) { return `<span style="font-size:0.6rem; color:#999;">${v} un</span>`; }
