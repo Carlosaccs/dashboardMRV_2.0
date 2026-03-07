@@ -2,24 +2,36 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>MRV Dashboard v11</title>
+    <title>Dashboard MRV SP v8.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE</div>
-    <div class="wrapper">
-        <aside class="sidebar-esq" id="lista-imoveis">Carregando...</aside>
-        <main class="conteudo-centro">
-            <div id="cidade-titulo">SELECIONE NO MAPA</div>
-            <div id="caixa-a"></div>
-            <div id="caixa-b"></div>
-        </main>
-        <aside class="sidebar-dir" id="ficha-tecnica">
-            <div style="text-align:center; color:#ccc; margin-top:50px;">Selecione um imóvel</div>
-        </aside>
-    </div>
-
-    <script src="mrv-data.js"></script>
-    <script src="mrv-engine.js"></script>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v8.0</div>
+<div class="wrapper">
+    <aside class="sidebar-esq" id="lista-imoveis">Carregando...</aside>
+    <main class="conteudo-centro">
+        <div id="cidade-titulo"></div> 
+        <div id="caixa-a"></div> 
+        <div id="caixa-b"></div> 
+    </main>
+    <aside class="sidebar-dir" id="ficha-tecnica"></aside>
+</div>
+<script src="mrv-data.js"></script>
+<script src="mrv-engine.js"></script>
+<script>
+    function gerarListaLateral() {
+        const list = document.getElementById('lista-imoveis');
+        list.innerHTML = "";
+        DADOS_PLANILHA.forEach(item => {
+            const btn = document.createElement('button');
+            btn.className = `btRes`;
+            btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque)}`;
+            btn.onclick = () => comandoSelecao(item.id_path, "", item);
+            list.appendChild(btn);
+        });
+    }
+    window.onload = iniciarApp;
+</script>
 </body>
 </html>
