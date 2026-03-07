@@ -2,12 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP v6.6</title>
+    <title>Dashboard MRV SP v6.8</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.6</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.8</div>
 
 <div class="wrapper">
     <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
@@ -31,11 +31,14 @@
 <script>
     function gerarListaLateral() {
         const list = document.getElementById('lista-imoveis');
+        if (!list) return;
         list.innerHTML = "";
+        
         DADOS_PLANILHA.forEach(item => {
             if (item.tipo === 'N') {
+                // Registro tipo N vira um cabeçalho escuro na lista
                 const div = document.createElement('div');
-                div.style = "background:#333; color:white; padding:5px; font-size:0.65rem; text-align:center; margin:10px 0; border-radius:4px;";
+                div.style = "background:#333; color:white; padding:8px; font-size:0.75rem; text-align:center; margin:15px 0 5px 0; border-radius:4px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;";
                 div.innerText = item.nome;
                 list.appendChild(div);
             } else {
