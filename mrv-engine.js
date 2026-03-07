@@ -3,15 +3,14 @@ let pathSelecionado = null;
 let nomeSelecionado = ""; 
 let mapaAtivo = 'GSP'; 
 
-// Mapeamento atualizado para incluir novas colunas
 const COL = {
     ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, END: 4, BAIRRO: 5, CIDADE: 6,
-    ENTREGA: 7, PRECO: 8, P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12, 
-    DIF: 13, LAZER: 14, SEG: 15, 
-    BK_CLI: 19, BK_COR: 20, LOC: 34, IMPLANT: 35 // Novas colunas mapeadas
+    ENTREGA: 7, PRECO: 8, P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12, BK_CLI: 19
 };
 
-async function iniciarApp() { await carregarPlanilha(); }
+async function iniciarApp() {
+    await carregarPlanilha();
+}
 
 async function carregarPlanilha() {
     const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzECvkefpM6aWy0IacqqI6l84_ti6zS1lSjcrgL0J4OcrtWZLb63sh7U1ZTQ4nsqDMeTU5ykl8xtDe/pub?output=csv";
@@ -34,45 +33,66 @@ async function carregarPlanilha() {
                 plantas: `De ${c[COL.P_DE]} a ${c[COL.P_ATE]}`,
                 obra: c[COL.OBRA],
                 dica: c[COL.DICA],
-                diferenciais: c[COL.DIF],
-                lazer: c[COL.LAZER],
-                seguranca: c[COL.SEG],
-                // Criamos uma lista de materiais
-                materiais: [
-                    { rotulo: "📄 Book Cliente", link: limparLinkDrive(c[COL.BK_CLI]) },
-                    { rotulo: "🔑 Book Corretor", link: limparLinkDrive(c[COL.BK_COR]) },
-                    { rotulo: "📍 Localização", link: limparLinkDrive(c[COL.LOC]) },
-                    { rotulo: "🏗️ Implantação", link: limparLinkDrive(c[COL.IMPLANT]) }
-                ]
+                book: limparLinkDrive(c[COL.BK_CLI])
             };
         }).filter(i => i.nome);
+
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
         desenharMapas();
     } catch (e) { console.error("Erro:", e); }
 }
 
 function desenharMapas() {
-    const dC = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
-    const dB = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
-    renderizarNoContainer('caixa-a', dC, true);
-    renderizarNoContainer('caixa-b', dB, false);
+    const dadosCima = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
+    const dadosBaixo = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
+    renderizarNoContainer('caixa-a', dadosCima, true);
+    renderizarNoContainer('caixa-b', dadosBaixo, false);
 }
 
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
+    if (!container) return;
+    
     const pathsHtml = dados.paths.map(p => {
         const temMRV = DADOS_PLANILHA.some(d => d.id_path === p.id.toLowerCase());
-        let clk = interativo ? (p.id.toLowerCase() === 'grandesaopaulo' && mapaAtivo === 'INTERIOR' ? `onclick="trocarMapas()"` : `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"`) : "";
-        const hvr = interativo ? `onmouseover="hoverNoMapa('${p.name}')" onmouseout="resetTitulo()"` : "";
-        return `<path id="${id}-${p.id}" name="${p.name}" d="${p.d}" class="${temMRV && interativo ? 'commrv' : ''}" ${clk} ${hvr}></path>`;
+        
+        // REGRA NOVA: No mapa do interior (Estado), o path 'grandesaopaulo' troca de mapa
+        let acaoClique = "";
+        if (interativo) {
+            if (p.id.toLowerCase() === 'grandesaopaulo' && mapaAtivo === 'INTERIOR') {
+                acaoClique = `onclick="trocarMapas()"`;
+            } else {
+                acaoClique = `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"`;
+            }
+        }
+
+        const acoesHover = interativo ? `onmouseover="hoverNoMapa('${p.name}')" onmouseout="resetTitulo()"` : "";
+        
+        return `<path id="${id}-${p.id}" name="${p.name}" d="${p.d}" class="${temMRV && interativo ? 'commrv' : ''}" ${acaoClique} ${acoesHover}></path>`;
     }).join('');
+
     const zoom = interativo ? 'scale(1.2)' : 'scale(0.9)';
-    container.innerHTML = `<svg viewBox="${dados.viewBox}" style="transform: ${zoom}; transform-origin: center;"><g transform="${dados.transform || ''}">${pathsHtml}</g></svg>`;
-    if (!interativo) { container.onclick = trocarMapas; container.style.cursor = "pointer"; }
+    container.innerHTML = `<svg viewBox="${dados.viewBox}" style="transform: ${zoom}; transform-origin: center;">
+        <g transform="${dados.transform || ''}">${pathsHtml}</g>
+    </svg>`;
+    
+    // Caixa de baixo sempre troca de mapa
+    if (!interativo) {
+        container.onclick = trocarMapas;
+        container.style.cursor = "pointer";
+    } else {
+        container.onclick = null;
+        container.style.cursor = "default";
+    }
 }
 
-function hoverNoMapa(n) { document.getElementById('cidade-titulo').innerText = n; }
-function resetTitulo() { document.getElementById('cidade-titulo').innerText = nomeSelecionado; }
+function hoverNoMapa(nome) {
+    document.getElementById('cidade-titulo').innerText = nome;
+}
+
+function resetTitulo() {
+    document.getElementById('cidade-titulo').innerText = nomeSelecionado;
+}
 
 function cliqueNoMapa(id, nome, temMRV) {
     if (!temMRV) return; 
@@ -81,86 +101,100 @@ function cliqueNoMapa(id, nome, temMRV) {
 }
 
 function comandoSelecao(idPath, nomePath, fonte) {
-    const estaGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
-    if ((estaGSP && mapaAtivo !== 'GSP') || (!estaGSP && mapaAtivo !== 'INTERIOR')) {
-        mapaAtivo = estaGSP ? 'GSP' : 'INTERIOR';
+    const estaNoGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
+    const estaNoInterior = MAPA_INTERIOR.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
+
+    if ((estaNoGSP && mapaAtivo !== 'GSP') || (estaNoInterior && mapaAtivo !== 'INTERIOR')) {
+        mapaAtivo = estaNoGSP ? 'GSP' : 'INTERIOR';
         desenharMapas();
     }
+
     setTimeout(() => {
         const el = document.getElementById(`caixa-a-${idPath}`);
-        if (el) { if (pathSelecionado) pathSelecionado.classList.remove('path-ativo'); el.classList.add('path-ativo'); pathSelecionado = el; }
+        if (el) {
+            if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
+            el.classList.add('path-ativo');
+            pathSelecionado = el;
+        }
     }, 50);
+
     nomeSelecionado = nomePath;
     document.getElementById('cidade-titulo').innerText = nomePath;
-    const imovs = DADOS_PLANILHA.filter(d => d.id_path === idPath.toLowerCase());
-    if (imovs.length > 0) {
-        const sel = (fonte && fonte.nome) ? fonte : imovs.sort((a,b) => a.nome.localeCompare(b.nome))[0];
-        montarVitrine(sel, imovs, nomePath);
+
+    const imoveis = DADOS_PLANILHA.filter(d => d.id_path === idPath.toLowerCase());
+    if (imoveis.length > 0) {
+        const selecionado = (fonte && fonte.nome) ? fonte : imoveis.sort((a,b) => a.nome.localeCompare(b.nome))[0];
+        montarVitrine(selecionado, imoveis, nomePath);
     }
 }
 
-function montarVitrine(sel, lista, regiao) {
-    const outros = lista.filter(i => i.nome !== sel.nome);
+function trocarMapas() {
+    mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP';
+    limparSelecao();
+    desenharMapas();
+}
+
+function limparSelecao() {
+    pathSelecionado = null;
+    nomeSelecionado = "";
     document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-    const bE = document.getElementById(`btn-esq-${sel.nome.replace(/[^a-zA-Z0-9]/g, '-')}`);
-    if (bE) bE.classList.add('ativo');
-
-    let dicasExtras = "";
-    if (sel.diferenciais) dicasExtras += `<div class="info-box"><label>Diferenciais</label><span>${sel.diferenciais}</span></div>`;
-    if (sel.lazer) dicasExtras += `<div class="info-box"><label>Lazer</label><span>${sel.lazer}</span></div>`;
-    if (sel.seguranca) dicasExtras += `<div class="info-box"><label>Segurança</label><span>${sel.seguranca}</span></div>`;
-
-    // GERAÇÃO DOS NOVOS BOTÕES NA VITRINE
-    const botoesMateriais = sel.materiais.map(m => {
-        if (!m.link || m.link.length < 15) return ""; // Não cria botão se estiver vazio
-        return `<a href="${m.link}" target="_blank" class="btRes" style="background:var(--mrv-verde); color:white; justify-content:center; font-weight:bold; margin-top:5px; border:none; height: 32px; font-size:0.65rem;">${m.rotulo}</a>`;
-    }).join('');
-
+    document.getElementById('cidade-titulo').innerText = "";
     document.getElementById('ficha-tecnica').innerHTML = `
-        <div class="vitrine-topo">MRV em ${regiao}</div>
-        <div style="margin-bottom:12px; max-height: 120px; overflow-y: auto;">
-            ${outros.map(o => `<button class="btRes" onclick="navegarVitrine('${o.nome}', '${regiao}')"><strong>${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('')}
+        <div style="text-align:center; color:#ccc; margin-top:100px;">
+            <p style="font-size:30px;">📍</p>
+            <p>Clique num residencial ou em uma região verde do mapa</p>
+        </div>`;
+}
+
+function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
+    const painel = document.getElementById('ficha-tecnica');
+    const outros = listaDaCidade.filter(i => i.nome !== selecionado.nome);
+    
+    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
+    const btnEsq = document.getElementById(`btn-esq-${selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-')}`);
+    if (btnEsq) btnEsq.classList.add('ativo');
+
+    painel.innerHTML = `
+        <div class="vitrine-topo">MRV em ${nomeRegiao}</div>
+        <div style="margin-bottom:15px;">
+            ${outros.map(o => `
+                <button class="btRes" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')">
+                    <strong>${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}
+                </button>
+            `).join('')}
         </div>
-        <div class="destaque-vitrine">
-            <h2>${sel.nome}</h2>
-            <div style="margin-top:5px;">${obterHtmlEstoque(sel.estoque, sel.tipo)}</div>
-        </div>
-        <p style="font-size:0.75rem; color:#444; margin-bottom:10px; font-weight: 500;">📍 ${sel.endereco} - ${sel.bairro}</p>
-        <div class="ficha-grid">
-            <div class="info-box"><label>💰 Preço</label><span>${sel.preco}</span></div>
-            <div class="info-box"><label>🔑 Entrega</label><span>${sel.entrega}</span></div>
-            <div class="info-box"><label>📐 Plantas</label><span>${sel.plantas}</span></div>
-            <div class="info-box"><label>🏗️ Obra</label><span>${sel.obra}%</span></div>
-        </div>
-        <div class="info-box" style="background:#fff5e6; border-left: 4px solid var(--mrv-laranja);">
-            <label style="color:#d67e00;">DICA</label>
-            <p style="font-size:0.75rem; line-height: 1.3;">${sel.dica}</p>
-        </div>
-        ${dicasExtras}
-        <div style="margin-top:10px;">
-            <p style="font-size:0.6rem; font-weight:bold; color:#999; margin-bottom:5px; text-transform:uppercase;">Materiais Disponíveis:</p>
-            ${botoesMateriais}
+        <div style="border-top:1px solid #eee; padding-top:15px;">
+            <div class="btRes ativo" style="cursor:default; margin-bottom:10px;">
+                <strong>${selecionado.nome}</strong> ${obterHtmlEstoque(selecionado.estoque, selecionado.tipo)}
+            </div>
+            <p style="font-size:0.7rem; color:#666; margin-bottom:10px;">📍 ${selecionado.endereco}</p>
+            <div class="ficha-grid">
+                <div class="info-box"><label>💰 Preço</label><span>${selecionado.preco}</span></div>
+                <div class="info-box"><label>🔑 Entrega</label><span>${selecionado.entrega}</span></div>
+                <div class="info-box"><label>📐 Plantas</label><span>${selecionado.plantas}</span></div>
+                <div class="info-box"><label>🏗️ Obra</label><span>${selecionado.obra}%</span></div>
+            </div>
+            <div class="info-box" style="background:#fff5e6; margin-top:10px; border-left: 3px solid var(--mrv-laranja);">
+                <label style="color:#d67e00;">💡 Dica do Corretor</label>
+                <p style="font-size:0.75rem;">${selecionado.dica}</p>
+            </div>
+            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:var(--mrv-verde); color:white; justify-content:center; font-weight:bold; margin-top:15px; border:none;">📄 Book Cliente</a>
         </div>
     `;
 }
 
-function trocarMapas() { mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; limparSelecao(); desenharMapas(); }
-
-function limparSelecao() {
-    pathSelecionado = null; nomeSelecionado = "";
-    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-    document.getElementById('cidade-titulo').innerText = "";
-    document.getElementById('ficha-tecnica').innerHTML = `<div style="text-align:center; color:#ccc; margin-top:100px;"><p style="font-size:30px;">📍</p><p>Selecione uma região verde no mapa.</p></div>`;
+function navegarVitrine(nome, nomeRegiao) {
+    const imovel = DADOS_PLANILHA.find(i => i.nome === nome);
+    const lista = DADOS_PLANILHA.filter(i => i.id_path === imovel.id_path);
+    montarVitrine(imovel, lista, nomeRegiao);
 }
 
-function navegarVitrine(n, r) { const imov = DADOS_PLANILHA.find(i => i.nome === n); const lst = DADOS_PLANILHA.filter(i => i.id_path === imov.id_path); montarVitrine(imov, lst, r); }
-
-function obterHtmlEstoque(v, t) {
-    if (t === 'N') return "";
-    const n = parseInt(v);
-    if (n < 6 && n > 0) return `<span class="badge-estoque" style="color:#e31010;">SÓ ${v} UN!</span>`;
-    if (v === "VENDIDO" || n === 0) return `<span class="badge-estoque" style="color:#999;">VENDIDO</span>`;
-    return `<span class="badge-estoque" style="color:#666;">${v} UN.</span>`;
+function obterHtmlEstoque(valor, tipo) {
+    if (tipo === 'N') return "";
+    const n = parseInt(valor);
+    if (n < 6 && n > 0) return `<span class="badge-estoque" style="color:#e31010;">SÓ ${valor} UN!</span>`;
+    if (valor === "VENDIDO" || n === 0) return `<span class="badge-estoque" style="color:#999">VENDIDO</span>`;
+    return `<span class="badge-estoque" style="color:#666">RESTAM ${valor} UN.</span>`;
 }
 
 function limparLinkDrive(url) {
@@ -168,5 +202,3 @@ function limparLinkDrive(url) {
     const match = url.match(/\/d\/(.+?)\/|\/d\/(.+?)$|id=(.+?)(&|$)/);
     return match ? `https://drive.google.com/file/d/${match[1]||match[2]||match[3]}/preview` : url;
 }
-
-function trocarMapas() { mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; limparSelecao(); desenharMapas(); }
