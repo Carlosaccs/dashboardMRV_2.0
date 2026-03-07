@@ -1,66 +1,55 @@
+// --- CONFIGURAÇÕES GLOBAIS ---
 let DADOS_PLANILHA = [];
 let pathSelecionado = null;
 let nomeSelecionado = ""; 
 let mapaAtivo = 'GSP'; 
 
-// 1. NOVO MAPEAMENTO DE COLUNAS (Baseado na Planilha DashboardMRV_SP_2)
+// 1. MAPEAMENTO DE COLUNAS (Baseado na sua Planilha DashboardMRV_SP_2)
 const COL = {
     ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, END: 4, BAIRRO: 5, CIDADE: 6,
     ENTREGA: 7, PRECO: 8, P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12,
-    BK_CLI: 19, BK_COR: 20, LOC: 34, IMPLANT: 35 // Confirmar se LOC e IMPLANT são 34 e 35 na nova contagem
+    BK_CLI: 19, BK_COR: 20, LOC: 34, IMPLANT: 35 
 };
 
-async function iniciarApp() { await carregarPlanilha(); }
+// 2. URL DA NOVA PLANILHA (Atualizada conforme seu link)
+// Usei o formato de exportação direta para garantir que o código leia os dados reais
+const SHEET_ID = "15V194P2JPGCCPpCTKJsib8sJuCZPgtbNb-rtgNaLS7E";
+const URL_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+async function iniciarApp() { 
+    console.log("Iniciando carregamento da nova planilha...");
+    await carregarPlanilha(); 
+}
 
 async function carregarPlanilha() {
-    // Certifique-se de que esta URL é a da planilha "DashboardMRV_SP_2" publicada em CSV
-    const URL_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQzECvkefpM6aWy0IacqqI6l84_ti6zS1lSjcrgL0J4OcrtWZLb63sh7U1ZTQ4nsqDMeTU5ykl8xtDe/pub?output=csv";
-    
     try {
-        const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
-        const texto = await response.text();
-        const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
+        // O acréscimo de &cachebust força o Google a entregar a versão mais recente
+        const response = await fetch(`${URL_CSV}&cachebust=${new Date().getTime()}`);
         
+        if (!response.ok) throw new Error("Erro ao acessar a planilha");
+
+        const texto = await response.text();
+        
+        // Converte CSV para Array e limpa aspas
+        const linhas = texto.split(/\r?\n/);
         DADOS_PLANILHA = linhas.slice(1).map(linha => {
-            const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-            
-            return {
-                id_path: c[COL.ID]?.toLowerCase(),
-                tipo: c[COL.TIPO]?.toUpperCase() || "R", // R = Residencial, L = Lançamento, N = Nome de Grupo
-                nome: c[COL.NOME],
-                estoque: c[COL.ESTOQUE],
-                endereco: c[COL.END],
-                bairro: c[COL.BAIRRO],
-                cidade: c[COL.CIDADE],
-                entrega: c[COL.ENTREGA],
-                preco: c[COL.PRECO],
-                plantas: `De ${c[COL.P_DE]} a ${c[COL.P_ATE]}`,
-                obra: c[COL.OBRA],
-                dica: c[COL.DICA],
-                materiais: [
-                    { rotulo: "📄 Book Cliente", link: limparLinkDrive(c[COL.BK_CLI]) },
-                    { rotulo: "🔑 Book Corretor", link: limparLinkDrive(c[COL.BK_COR]) },
-                    { rotulo: "📍 Localização", link: limparLinkDrive(c[COL.LOC]) },
-                    { rotulo: "🏗️ Implantação", link: limparLinkDrive(c[COL.IMPLANT]) }
-                ]
-            };
-        }).filter(i => i.nome);
+            return linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(campo => campo.replace(/"/g, "").trim());
+        });
 
-        if (typeof gerarListaLateral === 'function') gerarListaLateral();
-        desenharMapas();
-    } catch (e) { console.error("Erro na carga:", e); }
+        console.log("Dados carregados com sucesso. Total de registros:", DADOS_PLANILHA.length);
+        
+        // Chama a função de renderizar a lista (certifique-se que ela existe no seu index ou aqui)
+        if (typeof renderizarLista === "function") {
+            renderizarLista();
+        }
+        
+    } catch (erro) {
+        console.error("Erro crítico ao carregar planilha:", erro);
+    }
 }
 
-function desenharMapas() {
-    const dC = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
-    const dB = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
-    renderizarNoContainer('caixa-a', dC, true);
-    renderizarNoContainer('caixa-b', dB, false);
-}
-
-function renderizarNoContainer(id, dados, interativo) {
-    const container = document.getElementById(id);
-    const pathsHtml = dados.paths.map(p => {
+// Inicializa o app ao carregar o script
+iniciarApp();    const pathsHtml = dados.paths.map(p => {
         const temMRV = DADOS_PLANILHA.some(d => d.id_path === p.id.toLowerCase());
         let clk = interativo ? (p.id.toLowerCase() === 'grandesaopaulo' && mapaAtivo === 'INTERIOR' ? `onclick="trocarMapas()"` : `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"`) : "";
         const hvr = interativo ? `onmouseover="hoverNoMapa('${p.name}')" onmouseout="resetTitulo()"` : "";
