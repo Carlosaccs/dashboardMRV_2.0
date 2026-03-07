@@ -1,123 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard MRV SP - Gestão de Estoque</title>
-    <style>
-        /* CSS Integrado para evitar erros de carregamento */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f0f2f5; color: #333; }
-        .header { background: #007d2c; color: white; padding: 15px; text-align: center; font-size: 1.2em; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .container { display: flex; height: calc(100vh - 55px); }
-        .sidebar { width: 320px; background: white; border-right: 1px solid #ddd; overflow-y: auto; }
-        .main-content { flex-grow: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fff; }
-        .list-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-        .list-item:hover { background: #f9f9f9; }
-        .list-item strong { display: block; color: #007d2c; margin-bottom: 5px; }
-        .stock-tag { font-size: 0.85em; color: #666; padding: 2px 6px; background: #eee; border-radius: 4px; }
-        .low-stock { color: #d93025; background: #fce8e6; font-weight: bold; }
-        .card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 80%; max-width: 500px; }
-        .error { color: red; text-align: center; padding: 20px; }
-    </style>
+    <title>MRV SP - Carregando...</title>
+    <script>
+        function redirecionar() {
+            // Se a tela for menor que 1024px, assume que é mobile/tablet
+            if (window.innerWidth < 1024) {
+                window.location.href = "mobile.html";
+            } else {
+                window.location.href = "desktop.html";
+            }
+        }
+        window.onload = redirecionar;
+    </script>
 </head>
-<body>
-
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE (PLANILHA NOVA)</div>
-
-<div class="container">
-    <div class="sidebar" id="listaEmpreendimentos">
-        <div style="padding: 20px;">Carregando dados da planilha...</div>
-    </div>
-
-    <div class="main-content" id="detalhes">
-        <div class="card" id="card-boas-vendas">
-            <h2>Bem-vindo</h2>
-            <p>Selecione um empreendimento na lista ao lado para ver as informações de estoque atualizadas em tempo real.</p>
-        </div>
-    </div>
-</div>
-
-<script>
-// --- CONFIGURAÇÕES ---
-const SHEET_ID = "15V194P2JPGCCPpCTKJsib8sJuCZPgtbNb-rtgNaLS7E";
-// Link formatado para exportação direta de CSV
-const URL_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
-
-let DADOS_PLANILHA = [];
-
-// Mapeamento das colunas (Baseado na sua planilha DashboardMRV_SP_2)
-const COL = {
-    NOME: 2,    // Coluna C
-    ESTOQUE: 3, // Coluna D
-    CIDADE: 6,  // Coluna G
-    PRECO: 8    // Coluna I
-};
-
-async function iniciarApp() {
-    try {
-        // O cachebuster (?v=...) garante que o navegador ignore o "Estoque 1000" antigo
-        const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
-        
-        if (!response.ok) throw new Error("Não foi possível acessar a planilha. Verifique o compartilhamento.");
-
-        const texto = await response.text();
-        const linhas = texto.split(/\r?\n/);
-        
-        // Processa as linhas ignorando o cabeçalho
-        DADOS_PLANILHA = linhas.slice(1).filter(l => l.trim() !== "").map(linha => {
-            return linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"|"$/g, "").trim());
-        });
-
-        renderizarLista();
-    } catch (erro) {
-        document.getElementById('listaEmpreendimentos').innerHTML = `<div class="error">Erro: ${erro.message}</div>`;
-        console.error(erro);
-    }
-}
-
-function renderizarLista() {
-    const container = document.getElementById('listaEmpreendimentos');
-    container.innerHTML = "";
-
-    DADOS_PLANILHA.forEach((item, index) => {
-        const nome = item[COL.NOME] || "Sem Nome";
-        const estoqueRaw = item[COL.ESTOQUE];
-        
-        // Lógica crucial: Se estiver vazio na planilha, mostra "Consultar"
-        let estoqueTexto = (estoqueRaw && estoqueRaw !== "") ? `${estoqueRaw} UN.` : "Consultar";
-        let classeEstoque = (estoqueRaw && parseInt(estoqueRaw) < 5) ? 'stock-tag low-stock' : 'stock-tag';
-
-        const div = document.createElement('div');
-        div.className = 'list-item';
-        div.innerHTML = `
-            <strong>${nome}</strong>
-            <span class="${classeEstoque}">Estoque: ${estoqueTexto}</span>
-        `;
-        div.onclick = () => mostrarDetalhes(index);
-        container.appendChild(div);
-    });
-}
-
-function mostrarDetalhes(index) {
-    const item = DADOS_PLANILHA[index];
-    const estoqueRaw = item[COL.ESTOQUE];
-    const estoqueTexto = (estoqueRaw && estoqueRaw !== "") ? `${estoqueRaw} UN.` : "Consultar o Gestor";
-
-    document.getElementById('detalhes').innerHTML = `
-        <div class="card">
-            <h2 style="color:#007d2c; margin-top:0;">${item[COL.NOME]}</h2>
-            <hr>
-            <p><strong>Cidade:</strong> ${item[COL.CIDADE] || '---'}</p>
-            <p><strong>Estoque Atual:</strong> <span style="font-size:1.2em; font-weight:bold;">${estoqueTexto}</span></p>
-            <p><strong>Preço Sugerido:</strong> ${item[COL.PRECO] || 'Sob consulta'}</p>
-            <button onclick="location.reload()" style="margin-top:20px; padding:10px; cursor:pointer;">Atualizar Dados</button>
-        </div>
-    `;
-}
-
-// Inicia o sistema
-iniciarApp();
-</script>
-
+<body style="background:#065e03; display:flex; align-items:center; justify-content:center; height:100vh; color:white; font-family:sans-serif;">
+    <p>Detectando dispositivo...</p>
 </body>
 </html>
