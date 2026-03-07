@@ -1,20 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
 <head>
-    <title>MRV SP - Carregando...</title>
-    <script>
-        function redirecionar() {
-            // Se a tela for menor que 1024px, assume que é mobile/tablet
-            if (window.innerWidth < 1024) {
-                window.location.href = "mobile.html";
-            } else {
-                window.location.href = "desktop.html";
-            }
-        }
-        window.onload = redirecionar;
-    </script>
+    <meta charset="UTF-8">
+    <title>Dashboard MRV SP</title>
+    <style>
+        /* O SEU CSS FICA AQUI - Mantive simplificado para o exemplo */
+        body { font-family: Arial, sans-serif; margin: 0; }
+        .header { background: #007d2c; color: white; padding: 15px; text-align: center; }
+        .container { display: flex; }
+        .sidebar { width: 300px; border-right: 1px solid #ccc; height: 100vh; overflow-y: auto; }
+        .item { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
+        .item:hover { background: #f9f9f9; }
+    </style>
 </head>
-<body style="background:#065e03; display:flex; align-items:center; justify-content:center; height:100vh; color:white; font-family:sans-serif;">
-    <p>Detectando dispositivo...</p>
+<body>
+
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE</div>
+
+<div class="container">
+    <div class="sidebar" id="listaEmpreendimentos">Carregando dados...</div>
+    <div id="detalhes" style="padding: 20px;">Selecione um empreendimento.</div>
+</div>
+
+<script>
+// --- CONFIGURAÇÕES GLOBAIS ---
+let DADOS_PLANILHA = [];
+let pathSelecionado = null;
+let nomeSelecionado = ""; 
+let mapaAtivo = 'GSP'; 
+
+// 1. MAPEAMENTO DE COLUNAS (Baseado na sua Planilha DashboardMRV_SP_2)
+// Verifique se a coluna ESTOQUE é realmente a 3 (começando de 0: A=0, B=1, C=2, D=3)
+const COL = {
+    ID: 0, TIPO: 1, NOME: 2, ESTOQUE: 3, END: 4, BAIRRO: 5, CIDADE: 6,
+    ENTREGA: 7, PRECO: 8, P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12,
+    BK_CLI: 19, BK_COR: 20, LOC: 34, IMPLANT: 35 
+};
+
+// 2. URL DA PLANILHA (AQUI ESTÁ O SEGREDO)
+// Se a planilha nova for diferente, você DEVE gerar um novo link de "Publicar na Web" nela
+const URL_CSV = "https://docs.google.com/spreadsheets/d/15V194P2JPGCCPpCTKJsib8sJuCZPgtbNb-rtgNaLS7E/edit?usp=sharing";
+
+async function iniciarApp() { 
+    await carregarPlanilha(); 
+}
+
+async function carregarPlanilha() {
+    try {
+        // O &v= no final força o navegador a buscar os dados novos, ignorando o estoque de "1000" antigo
+        const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
+        const texto = await response.text();
+        
+        // Converte CSV para Array (Tratando aspas e vírgulas)
+        const linhas = texto.split(/\r?\n/);
+        DADOS_PLANILHA = linhas.slice(1).map(linha => {
+            // Esta regex ajuda a separar colunas mesmo que tenham vírgulas dentro de aspas
+            return linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        });
+
+        renderizarLista();
+    } catch (erro) {
+        console.error("Erro ao carregar:", erro);
+        document.getElementById('listaEmpreendimentos').innerHTML = "Erro ao carregar dados.";
+    }
+}
+
+function renderizarLista() {
+    const lista = document.getElementById('listaEmpreendimentos');
+    lista.innerHTML = "";
+
+    DADOS_PLANILHA.forEach((item, index) => {
+        if (!item[COL.NOME]) return;
+
+        const nome = item[COL.NOME].replace(/"/g, "");
+        let estoque = item[COL.ESTOQUE] ? item[COL.ESTOQUE].replace(/"/g, "").trim() : "";
+        
+        // Se o estoque estiver vazio na planilha nova, ele mostrará "Consultar"
+        const estoqueTexto = estoque !== "" ? `${estoque} UN.` : "Consultar";
+
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<strong>${nome}</strong><br><small>Estoque: ${estoqueTexto}</small>`;
+        div.onclick = () => {
+            document.getElementById('detalhes').innerHTML = `
+                <h2>${nome}</h2>
+                <p>Cidade: ${item[COL.CIDADE]}</p>
+                <p>Estoque Atual: ${estoqueTexto}</p>
+                <p>Preço: ${item[COL.PRECO] || 'Sob consulta'}</p>
+            `;
+        };
+        lista.appendChild(div);
+    });
+}
+
+// Iniciar tudo
+iniciarApp();
+</script>
+
 </body>
 </html>
