@@ -2,30 +2,24 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP v9.0</title>
+    <title>MRV Dashboard v11</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v9.0</div>
+    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE</div>
     <div class="wrapper">
-        <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
+        <aside class="sidebar-esq" id="lista-imoveis">Carregando...</aside>
         <main class="conteudo-centro">
-            <div id="cidade-titulo">SELECIONE UMA REGIÃO NO MAPA</div> 
-            <div id="caixa-a"></div> 
-            <div id="caixa-b" title="Clique para alternar entre Capital e Interior"></div> 
+            <div id="cidade-titulo">SELECIONE NO MAPA</div>
+            <div id="caixa-a"></div>
+            <div id="caixa-b"></div>
         </main>
         <aside class="sidebar-dir" id="ficha-tecnica">
-            <div style="text-align:center; padding-top:100px; color:#ddd;">
-                <p style="font-size:3rem;">🏢</p>
-                <p>Selecione um imóvel para detalhes</p>
-            </div>
+            <div style="text-align:center; color:#ccc; margin-top:50px;">Selecione um imóvel</div>
         </aside>
     </div>
 
     <script src="mrv-data.js"></script>
     <script src="mrv-engine.js"></script>
-    <script>
-        window.onload = iniciarApp;
-    </script>
 </body>
 </html>
