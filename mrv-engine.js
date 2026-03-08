@@ -3,22 +3,21 @@ let pathSelecionado = null;
 let nomeSelecionado = ""; 
 let mapaAtivo = 'GSP'; 
 
-// MAPEAMENTO RECALIBRADO PARA A TABELA DE 46 COLUNAS
 const COL = {
-    ID: 0,          // ID_PATH (Coluna A)
-    TIPO: 1,        // CATEGORIA (Coluna B)
-    ORDEM: 2,       // ORDEM (Coluna C)
-    NOME: 3,        // NOME_CURTO (Coluna D) -> USAR NOS BOTÕES
-    NOME_FULL: 4,   // NOME_FULL (Coluna E) -> USAR NO TÍTULO VERDE
-    ESTOQUE: 5,     // ESTOQUE (Coluna F)
-    END: 6,         // ENDERECO (Coluna G)
-    PRECO: 7,       // PRECO (Coluna H)
-    ENTREGA: 8,     // ENTREGA (Coluna I)
-    P_DE: 9,        // PLANTAS_DE (Coluna J)
-    P_ATE: 10,      // PLANTAS_ATE (Coluna K)
-    OBRA: 11,       // STATUS_OBRA (Coluna L)
-    DICA: 12,       // DICA_CURTA (Coluna M)
-    BK_CLI: 20      // BOOK_CLIENTE (Coluna U)
+    ID: 0,          // A: ID_PATH
+    TIPO: 1,        // B: CATEGORIA
+    ORDEM: 2,       // C: ORDEM
+    NOME: 3,        // D: NOME_CURTO
+    NOME_FULL: 4,   // E: NOME_FULL
+    ESTOQUE: 5,     // F: ESTOQUE
+    END: 6,         // G: ENDERECO
+    PRECO: 7,       // H: PRECO
+    ENTREGA: 8,     // I: ENTREGA
+    P_DE: 9,        // J: PLANTAS_DE
+    P_ATE: 10,      // K: PLANTAS_ATE
+    OBRA: 11,       // L: STATUS_OBRA
+    DICA: 12,       // M: DICA_CURTA
+    BK_CLI: 20      // U: BOOK_CLIENTE
 };
 
 async function iniciarApp() {
@@ -35,15 +34,13 @@ async function carregarPlanilha() {
         const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
         
         DADOS_PLANILHA = linhas.slice(1).map(linha => {
-            // Regex robusta para não separar vírgulas que estão dentro de aspas
             const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
-            
             return {
                 id_path: c[COL.ID]?.toLowerCase() || "",
                 tipo: (c[COL.TIPO] === 'COMPLEXO' || c[COL.TIPO] === 'N') ? 'N' : 'R',
                 ordem: parseInt(c[COL.ORDEM]) || 999,
-                nome: c[COL.NOME] || "Sem Nome", // Garante que pegue o NOME_CURTO
-                nomeFull: c[COL.NOME_FULL] || c[COL.NOME], 
+                nome: c[COL.NOME] || "",
+                nomeFull: c[COL.NOME_FULL] || c[COL.NOME],
                 estoque: c[COL.ESTOQUE] || "",
                 endereco: c[COL.END] || "",
                 cidade: c[COL.ID] ? c[COL.ID].toUpperCase() : "", 
@@ -54,26 +51,30 @@ async function carregarPlanilha() {
                 dica: c[COL.DICA] || "",
                 book: limparLinkDrive(c[COL.BK_CLI] || "")
             };
-        }).filter(i => i.id_path !== ""); // Filtra linhas vazias
+        }).filter(i => i.id_path !== "");
 
-        // Ordena conforme a coluna C (ORDEM)
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
 
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
         desenharMapas();
-    } catch (e) { console.error("Erro na leitura da planilha:", e); }
+    } catch (e) { console.error("Erro:", e); }
 }
 
 function obterHtmlEstoque(valor, tipo) {
     if (tipo === 'N') return "";
-    if (!valor || valor.trim() === "" || valor === "null") return `<span class="badge-estoque" style="color:#666">CONSULTAR</span>`;
+    const cleanVal = valor ? valor.toString().toUpperCase().trim() : "";
+    if (cleanVal === "" || cleanVal === "NULL") return `<span class="badge-estoque" style="color:#666">CONSULTAR</span>`;
+    if (cleanVal === "VENDIDO" || cleanVal === "0") return `<span class="badge-estoque" style="color:#999">VENDIDO</span>`;
+    
     const n = parseInt(valor);
-    if (valor.toUpperCase() === "VENDIDO" || n === 0) return `<span class="badge-estoque" style="color:#999">VENDIDO</span>`;
-    if (n < 6 && n > 0) return `<span class="badge-estoque" style="color:#e31010;">SÓ ${valor} UN!</span>`;
-    return `<span class="badge-estoque">RESTAM ${valor} UN.</span>`;
+    if (!isNaN(n)) {
+        if (n < 6 && n > 0) return `<span class="badge-estoque" style="color:#e31010;">SÓ ${n} UN!</span>`;
+        return `<span class="badge-estoque">RESTAM ${n} UN.</span>`;
+    }
+    return `<span class="badge-estoque">${valor}</span>`;
 }
 
-// ... (Restante das funções de mapa permanecem iguais para não estragar a navegação)
+// Funções de Mapa e Vitrine permanecem as mesmas (conforme mestre v6.8)
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
     if (!container) return;
@@ -87,15 +88,18 @@ function renderizarNoContainer(id, dados, interativo) {
     container.innerHTML = `<svg viewBox="${dados.viewBox}" style="transform: ${zoom}; transform-origin: center;"><g transform="${dados.transform || ''}">${pathsHtml}</g></svg>`;
     if (!interativo) { container.onclick = trocarMapas; container.style.cursor = "pointer"; }
 }
+
 function desenharMapas() {
     const dadosCima = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
     const dadosBaixo = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
     renderizarNoContainer('caixa-a', dadosCima, true);
     renderizarNoContainer('caixa-b', dadosBaixo, false);
 }
+
 function hoverNoMapa(nome) { document.getElementById('cidade-titulo').innerText = nome; }
 function resetTitulo() { document.getElementById('cidade-titulo').innerText = nomeSelecionado; }
 function cliqueNoMapa(id, nome, temMRV) { if (!temMRV) return; nomeSelecionado = nome; comandoSelecao(id, nome, 'mapa'); }
+
 function comandoSelecao(idPath, nomePath, fonte) {
     const estaNoGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
     const estaNoInterior = MAPA_INTERIOR.paths.some(p => p.id.toLowerCase() === idPath.toLowerCase());
@@ -119,7 +123,9 @@ function comandoSelecao(idPath, nomePath, fonte) {
         montarVitrine(selecionado, imoveis, nomePath);
     }
 }
+
 function trocarMapas() { mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; limparSelecao(); desenharMapas(); }
+
 function limparSelecao() {
     pathSelecionado = null; nomeSelecionado = "";
     document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
@@ -130,19 +136,20 @@ function limparSelecao() {
 function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const painel = document.getElementById('ficha-tecnica');
     const outros = listaDaCidade.filter(i => i.nome !== selecionado.nome && i.tipo !== 'N');
+    
     document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
     const idLimpo = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
     const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
     if (btnEsq) btnEsq.classList.add('ativo');
 
     painel.innerHTML = `
-        <div class="vitrine-topo">${selecionado.nomeFull}</div>
+        <div class="vitrine-topo notranslate">${selecionado.nomeFull}</div>
         <div style="margin-bottom:15px;">
-            ${outros.map(o => `<button class="btRes" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')"><strong>${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('')}
+            ${outros.map(o => `<button class="btRes notranslate" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')"><strong class="notranslate">${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('')}
         </div>
         <div style="border-top:1px solid #eee; padding-top:15px;">
-            <div class="btRes ativo" style="cursor:default; margin-bottom:10px;">
-                <strong>${selecionado.nome}</strong> ${obterHtmlEstoque(selecionado.estoque, selecionado.tipo)}
+            <div class="btRes ativo notranslate" style="cursor:default; margin-bottom:10px;">
+                <strong class="notranslate">${selecionado.nome}</strong> ${obterHtmlEstoque(selecionado.estoque, selecionado.tipo)}
             </div>
             <p style="font-size:0.7rem; color:#666; margin-bottom:10px;">📍 ${selecionado.endereco}</p>
             <div class="ficha-grid">
@@ -164,6 +171,7 @@ function navegarVitrine(nome, nomeRegiao) {
     const lista = DADOS_PLANILHA.filter(i => i.id_path === imovel.id_path);
     montarVitrine(imovel, lista, nomeRegiao);
 }
+
 function limparLinkDrive(url) {
     if (!url || !url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|\/d\/(.+?)$|id=(.+?)(&|$)/);
