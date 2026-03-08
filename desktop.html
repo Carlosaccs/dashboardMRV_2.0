@@ -1,14 +1,13 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard MRV SP v6.8</title>
+    <title>Dashboard MRV SP v6.9</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.8</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.9</div>
 
 <div class="wrapper">
     <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
@@ -22,7 +21,7 @@
     <aside class="sidebar-dir" id="ficha-tecnica">
         <div style="text-align:center; color:#ccc; margin-top:100px;">
             <p style="font-size: 30px;">📍</p>
-            <p>Clique no mapa principal para ver os empreendimentos.</p>
+            <p>Selecione um complexo ou residencial.</p>
         </div>
     </aside>
 </div>
@@ -35,21 +34,23 @@
         if (!list) return;
         list.innerHTML = "";
         
+        // Mantém a ordem da planilha (que já deve estar alfabética)
         DADOS_PLANILHA.forEach(item => {
+            const btn = document.createElement('button');
+            
+            // Se for Tipo N, ganha um estilo de destaque preto, senão estilo padrão
             if (item.tipo === 'N') {
-                // Registro tipo N vira um cabeçalho escuro na lista
-                const div = document.createElement('div');
-                div.style = "background:#333; color:white; padding:8px; font-size:0.75rem; text-align:center; margin:15px 0 5px 0; border-radius:4px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;";
-                div.innerText = item.nome;
-                list.appendChild(div);
-            } else {
-                const btn = document.createElement('button');
                 btn.className = `btRes`;
-                btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                btn.style = "background:#333 !important; color:white !important; border-left: 4px solid var(--mrv-laranja); margin-top:10px; margin-bottom:10px; font-weight:bold;";
+                btn.innerHTML = `<span>🏢 ${item.nome.toUpperCase()}</span>`;
+            } else {
+                btn.className = `btRes`;
                 btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
-                btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
-                list.appendChild(btn);
             }
+
+            btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
+            btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
+            list.appendChild(btn);
         });
     }
     window.onload = iniciarApp;
