@@ -36,8 +36,8 @@
         list.innerHTML = "";
         
         DADOS_PLANILHA.forEach(item => {
-            // Ignora itens que não tenham nome ou tenham erro de coluna
-            if (!item.nome || item.nome === "Erro na Linha") return;
+            // Filtro duplo de segurança
+            if (!item.nome || item.nome.length > 45) return;
 
             if (item.tipo === 'N') {
                 const div = document.createElement('div');
