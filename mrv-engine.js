@@ -3,22 +3,21 @@ let pathSelecionado = null;
 let nomeSelecionado = ""; 
 let mapaAtivo = 'GSP'; 
 
-// MAPEAMENTO BASEADO NA SUA PLANILHA (image_5ae96f.jpg)
 const COL = {
-    ID: 0,          // Coluna A: ID_PATH
-    TIPO: 1,        // Coluna B: CATEGORIA
-    ORDEM: 2,       // Coluna C: ORDEM
-    NOME: 3,        // Coluna D: NOME_CURTO (O que vai no botão)
-    NOME_FULL: 4,   // Coluna E: NOME_FULL (O que vai no título verde)
-    ESTOQUE: 5,     // Coluna F: ESTOQUE
-    END: 6,         // Coluna G: ENDERECO
-    PRECO: 7,       // Coluna H: PRECO
-    ENTREGA: 8,     // Coluna I: ENTREGA
-    P_DE: 9,        // Coluna J: PLANTAS_DE
-    P_ATE: 10,      // Coluna K: PLANTAS_ATE
-    OBRA: 11,       // Coluna L: STATUS_OBRA
-    DICA: 12,       // Coluna M: DICA_CURTA
-    BK_CLI: 20      // Coluna U: BOOK_CLIENTE
+    ID: 0,          // A
+    TIPO: 1,        // B
+    ORDEM: 2,       // C
+    NOME: 3,        // D (Nome Curto)
+    NOME_FULL: 4,   // E (Nome Completo)
+    ESTOQUE: 5,     // F
+    END: 6,         // G
+    PRECO: 7,       // H
+    ENTREGA: 8,     // I
+    P_DE: 9,        // J
+    P_ATE: 10,      // K
+    OBRA: 11,       // L
+    DICA: 12,       // M
+    BK_CLI: 20      // U
 };
 
 async function iniciarApp() {
@@ -31,13 +30,16 @@ async function carregarPlanilha() {
     
     try {
         const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
-        const texto = await response.text();
+        let texto = await response.text();
+        
+        // CORREÇÃO CRUCIAL: Remove quebras de linha dentro de aspas (textos longos)
+        texto = texto.replace(/"([^"]*)"/g, (match, p1) => p1.replace(/\r?\n|\r/g, " "));
+
         const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
         
         DADOS_PLANILHA = linhas.slice(1).map(linha => {
-            // Esta regex separa por vírgula, mas mantém o que está entre aspas intacto
-            const colunas = linha.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || [];
-            const c = colunas.map(v => v.trim().replace(/^"|"$/g, ''));
+            // Regex para separar colunas ignorando vírgulas dentro de aspas
+            const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
             
             const nomeCurto = c[COL.NOME] || "";
 
@@ -57,7 +59,12 @@ async function carregarPlanilha() {
                 dica: c[COL.DICA] || "",
                 book: limparLinkDrive(c[COL.BK_CLI] || "")
             };
-        }).filter(i => i.id_path !== "" && i.nome.length > 0 && i.nome.length < 45); // Descarta nomes gigantes que são erros
+        }).filter(i => 
+            i.id_path !== "" && 
+            i.nome.length > 2 && 
+            i.nome.length < 40 && // Filtra frases de erro
+            !i.nome.includes(",") // Se o nome tem vírgula, a coluna está errada
+        );
 
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
 
@@ -69,8 +76,13 @@ async function carregarPlanilha() {
 function obterHtmlEstoque(valor, tipo) {
     if (tipo === 'N') return "";
     const cleanVal = valor ? valor.toString().toUpperCase().trim() : "";
+    
+    // Se o valor for muito longo, é lixo de coluna errada
+    if (cleanVal.length > 15) return `<span class="badge-estoque" style="color:#666">CONSULTAR</span>`;
+
     if (cleanVal === "" || cleanVal === "NULL" || cleanVal === "CONSULTAR") 
         return `<span class="badge-estoque" style="color:#666">CONSULTAR</span>`;
+    
     if (cleanVal === "VENDIDO" || cleanVal === "0") 
         return `<span class="badge-estoque" style="color:#999">VENDIDO</span>`;
     
@@ -82,7 +94,7 @@ function obterHtmlEstoque(valor, tipo) {
     return `<span class="badge-estoque">${valor}</span>`;
 }
 
-// ... (Manter funções de mapa, trocarMapas e renderizarNoContainer do código anterior)
+// ... (Restante das funções de mapa permanecem iguais)
 
 function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const painel = document.getElementById('ficha-tecnica');
@@ -109,20 +121,20 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
                 <div class="info-box"><label>📐 Plantas</label><span>${selecionado.plantas}</span></div>
                 <div class="info-box"><label>🏗️ Obra</label><span>${selecionado.obra}%</span></div>
             </div>
-            <div class="info-box" style="background:#fff5e6; margin-top:10px; border-left: 3px solid var(--mrv-laranja);">
+            <div class="info-box" style="background:#fff5e6; margin-top:10px; border-left: 3px solid #f37021;">
                 <label style="color:#d67e00;">💡 Dica do Corretor</label>
                 <p style="font-size:0.75rem;">${selecionado.dica}</p>
             </div>
-            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:var(--mrv-verde); color:white; justify-content:center; font-weight:bold; margin-top:15px; border:none;">📄 Book Cliente</a>
+            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:#00713a; color:white; justify-content:center; font-weight:bold; margin-top:15px; border:none;">📄 Book Cliente</a>
         </div>`;
 }
 
-// Funções restantes
 function navegarVitrine(nome, nomeRegiao) {
     const imovel = DADOS_PLANILHA.find(i => i.nome === nome);
     const lista = DADOS_PLANILHA.filter(i => i.id_path === imovel.id_path);
     montarVitrine(imovel, lista, nomeRegiao);
 }
+
 function limparLinkDrive(url) {
     if (!url || !url.includes('drive.google.com')) return url;
     const match = url.match(/\/d\/(.+?)\/|\/d\/(.+?)$|id=(.+?)(&|$)/);
