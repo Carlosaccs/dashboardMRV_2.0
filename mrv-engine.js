@@ -10,7 +10,11 @@ const COL = {
 };
 
 async function iniciarApp() {
-    console.log("Iniciando App...");
+    // Primeiro desenhamos os mapas vazios para garantir que a interface apareça
+    if (typeof MAPA_GSP !== 'undefined') {
+        desenharMapas();
+    }
+    // Depois buscamos os dados para "pintar" o mapa e criar a lista
     await carregarPlanilha();
 }
 
@@ -22,7 +26,7 @@ async function carregarPlanilha() {
         const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
         let texto = await response.text();
         
-        // Limpeza de aspas e quebras de linha
+        // Remove quebras de linha dentro de aspas (essencial para não quebrar a tabela)
         texto = texto.replace(/"([^"]*)"/g, (m, p1) => p1.replace(/\r?\n|\r/g, " "));
 
         const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
@@ -30,7 +34,6 @@ async function carregarPlanilha() {
         DADOS_PLANILHA = linhas.slice(1).map(linha => {
             const c = linha.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.trim().replace(/^"|"$/g, ''));
             
-            // Limpeza extra para evitar IDs quebrados (remove espaços e caracteres especiais do ID)
             const idLimpo = c[COL.ID] ? c[COL.ID].toLowerCase().replace(/\s/g, '') : "";
 
             return {
@@ -49,23 +52,28 @@ async function carregarPlanilha() {
                 dica: c[COL.DICA] || "",
                 book: limparLinkDrive(c[COL.BK_CLI] || "")
             };
-        }).filter(i => i.id_path !== "" && i.nome.length > 2 && i.nome.length < 45);
+        }).filter(i => i.id_path !== "" && i.nome.length > 2); // Filtro simplificado para não quebrar
 
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
 
+        // Atualiza a interface com os dados novos
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
-        desenharMapas();
-        console.log("Dados carregados com sucesso!");
+        desenharMapas(); 
 
-    } catch (e) { console.error("Erro fatal no carregamento:", e); }
+    } catch (e) { 
+        console.error("Erro no carregamento:", e);
+        // Se a planilha falhar, ao menos tenta manter o mapa na tela
+        desenharMapas();
+    }
 }
 
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
-    if (!container) return;
+    if (!container || !dados) return;
 
     const pathsHtml = dados.paths.map(p => {
         const idPathNormalizado = p.id.toLowerCase().replace(/\s/g, '');
+        // Verifica se existe algum imóvel ativo para esta cidade no mapa
         const temMRV = DADOS_PLANILHA.some(d => d.id_path === idPathNormalizado);
         
         let acaoClique = interativo ? `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"` : "";
@@ -84,7 +92,6 @@ function renderizarNoContainer(id, dados, interativo) {
 }
 
 function desenharMapas() {
-    console.log("Desenhando mapas...");
     const dadosCima = (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR;
     const dadosBaixo = (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP;
     renderizarNoContainer('caixa-a', dadosCima, true);
@@ -105,10 +112,10 @@ function comandoSelecao(idPath, nomePath, fonte) {
         nomeSelecionado = nomePath;
         document.getElementById('cidade-titulo').innerText = nomePath;
         
-        // Ativa visualmente o path
+        // Remove destaque anterior e aplica no novo
+        if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
         const el = document.getElementById(`caixa-a-${idPath}`);
         if (el) {
-            if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
             el.classList.add('path-ativo');
             pathSelecionado = el;
         }
@@ -121,4 +128,60 @@ function hoverNoMapa(nome) { document.getElementById('cidade-titulo').innerText 
 function resetTitulo() { document.getElementById('cidade-titulo').innerText = nomeSelecionado; }
 function trocarMapas() { mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; desenharMapas(); }
 
-// ... (Manter funções obterHtmlEstoque, montarVitrine e limparLinkDrive iguais às anteriores)
+function obterHtmlEstoque(valor, tipo) {
+    if (tipo === 'N') return "";
+    const cleanVal = valor ? valor.toString().toUpperCase().trim() : "";
+    if (cleanVal === "" || cleanVal === "NULL" || cleanVal.length > 15) return `<span class="badge-estoque" style="color:#666">CONSULTAR</span>`;
+    if (cleanVal === "VENDIDO" || cleanVal === "0") return `<span class="badge-estoque" style="color:#999">VENDIDO</span>`;
+    const n = parseInt(valor);
+    if (!isNaN(n)) {
+        if (n < 6 && n > 0) return `<span class="badge-estoque" style="color:#e31010;">SÓ ${n} UN!</span>`;
+        return `<span class="badge-estoque">RESTAM ${n} UN.</span>`;
+    }
+    return `<span class="badge-estoque">${valor}</span>`;
+}
+
+function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
+    const painel = document.getElementById('ficha-tecnica');
+    const outros = listaDaCidade.filter(i => i.nome !== selecionado.nome && i.tipo !== 'N');
+    
+    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
+    const idLimpo = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
+    const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
+    if (btnEsq) btnEsq.classList.add('ativo');
+
+    painel.innerHTML = `
+        <div class="vitrine-topo notranslate">${selecionado.nomeFull}</div>
+        <div style="margin-bottom:15px;">
+            ${outros.map(o => `<button class="btRes notranslate" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')"><strong class="notranslate">${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('')}
+        </div>
+        <div style="border-top:1px solid #eee; padding-top:15px;">
+            <div class="btRes ativo notranslate" style="cursor:default; margin-bottom:10px;">
+                <strong class="notranslate">${selecionado.nome}</strong> ${obterHtmlEstoque(selecionado.estoque, selecionado.tipo)}
+            </div>
+            <p style="font-size:0.7rem; color:#666; margin-bottom:10px;">📍 ${selecionado.endereco}</p>
+            <div class="ficha-grid">
+                <div class="info-box"><label>💰 Preço</label><span>${selecionado.preco}</span></div>
+                <div class="info-box"><label>🔑 Entrega</label><span>${selecionado.entrega}</span></div>
+                <div class="info-box"><label>📐 Plantas</label><span>${selecionado.plantas}</span></div>
+                <div class="info-box"><label>🏗️ Obra</label><span>${selecionado.obra}%</span></div>
+            </div>
+            <div class="info-box" style="background:#fff5e6; margin-top:10px; border-left: 3px solid #f37021;">
+                <label style="color:#d67e00;">💡 Dica do Corretor</label>
+                <p style="font-size:0.75rem;">${selecionado.dica}</p>
+            </div>
+            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:#00713a; color:white; justify-content:center; font-weight:bold; margin-top:15px; border:none;">📄 Book Cliente</a>
+        </div>`;
+}
+
+function navegarVitrine(nome, nomeRegiao) {
+    const imovel = DADOS_PLANILHA.find(i => i.nome === nome);
+    const lista = DADOS_PLANILHA.filter(i => i.id_path === imovel.id_path);
+    montarVitrine(imovel, lista, nomeRegiao);
+}
+
+function limparLinkDrive(url) {
+    if (!url || !url.includes('drive.google.com')) return url;
+    const match = url.match(/\/d\/(.+?)\/|\/d\/(.+?)$|id=(.+?)(&|$)/);
+    return match ? `https://drive.google.com/file/d/${match[1]||match[2]||match[3]}/preview` : url;
+}
