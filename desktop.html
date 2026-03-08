@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="notranslate">
 <head>
     <meta charset="UTF-8">
-    <title>Painel de controle MRV SP v6.8</title>
+    <meta name="google" content="notranslate">
+    <title>Dashboard MRV SP v9.0</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Reforço para garantir que o tradutor não mude o layout */
+        .notranslate { translate: no !important; }
+    </style>
 </head>
 <body>
 
-<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v6.8</div>
+<div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v9.0</div>
 
 <div class="wrapper">
     <aside class="sidebar-esq" id="lista-imoveis">Carregando residenciais...</aside>
@@ -21,7 +26,7 @@
     <aside class="sidebar-dir" id="ficha-tecnica">
         <div style="text-align:center; color:#ccc; margin-top:100px;">
             <p style="font-size: 30px;">📍</p>
-            <p>Clique no mapa principal para ver os empreendimentos.</p>
+            <p>Selecione um empreendimento</p>
         </div>
     </aside>
 </div>
@@ -35,20 +40,18 @@
         list.innerHTML = "";
         
         DADOS_PLANILHA.forEach(item => {
-            // Se for categoria COMPLEXO (N), cria o divisor escuro
             if (item.tipo === 'N') {
                 const div = document.createElement('div');
+                div.className = "notranslate";
                 div.style = "background:#333; color:white; padding:8px; font-size:0.72rem; text-align:center; margin:15px 0 5px 0; border-radius:4px; font-weight:bold; text-transform:uppercase;";
-                div.innerText = item.nome; // Usa o NOME_CURTO da coluna 3
+                div.innerText = item.nome; 
                 list.appendChild(div);
             } else {
-                // Se for RESIDENCIAL, cria o botão com estoque
                 const btn = document.createElement('button');
-                btn.className = `btRes`;
-                // Remove caracteres especiais do nome para criar um ID seguro
+                btn.className = `btRes notranslate`; // Classe notranslate aplicada aqui
                 const idLimpo = item.nome.replace(/[^a-zA-Z0-9]/g, '-');
                 btn.id = `btn-esq-${idLimpo}`;
-                btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
+                btn.innerHTML = `<strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
                 list.appendChild(btn);
             }
