@@ -4,10 +4,39 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard MRV SP - Gestão de Estoque</title>
+    <title>Dashboard MRV SP - v9.2</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Garantia visual contra tradutores que alteram o layout */
+        /* Estilo para o Título do Complexo ser clicável sem perder o visual */
+        .separador-complexo-btn {
+            background: #333;
+            color: white;
+            padding: 10px;
+            font-size: 0.75rem;
+            text-align: center;
+            margin: 15px 0 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            width: 100%;
+            border: none;
+            display: block;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .separador-complexo-btn:hover {
+            background: #444;
+            transform: translateY(-2px); /* Efeito de levante no hover */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .separador-complexo-btn:active {
+            transform: translateY(0);
+            background: #222;
+        }
+
         .notranslate { translate: no !important; }
     </style>
 </head>
@@ -17,7 +46,7 @@
 
     <div class="wrapper">
         <aside class="sidebar-esq" id="lista-imoveis">
-            <div style="padding:20px; color:#666;">Carregando residenciais...</div>
+            <div style="padding:20px; color:#666;">Carregando...</div>
         </aside>
         
         <main class="conteudo-centro">
@@ -29,7 +58,7 @@
         <aside class="sidebar-dir" id="ficha-tecnica">
             <div style="text-align:center; color:#ccc; margin-top:100px;">
                 <p style="font-size: 30px;">📍</p>
-                <p>Selecione um empreendimento no mapa ou na lista lateral</p>
+                <p>Selecione um empreendimento</p>
             </div>
         </aside>
     </div>
@@ -38,66 +67,40 @@
     <script src="mrv-engine.js"></script>
     
     <script>
-        /**
-         * Gera a lista de botões na barra lateral esquerda 
-         * Baseado nos dados processados pela planilha no mrv-engine.js
-         */
         function gerarListaLateral() {
             const list = document.getElementById('lista-imoveis');
             if (!list) return;
+            list.innerHTML = ""; 
             
-            list.innerHTML = ""; // Limpa o "Carregando..."
-            
-            if (DADOS_PLANILHA.length === 0) {
-                list.innerHTML = "<div style='padding:20px; color:red;'>Nenhum dado encontrado na planilha.</div>";
-                return;
-            }
-
             DADOS_PLANILHA.forEach(item => {
-                // Pula itens que parecem ser erros de leitura (textos muito longos)
                 if (!item.nome || item.nome.length > 45) return;
 
                 if (item.tipo === 'N') {
-                    // Renderiza como um divisor de Grupo/Cidade
-                    const div = document.createElement('div');
-                    div.className = "notranslate";
-                    div.style = "background:#333; color:white; padding:8px; font-size:0.72rem; text-align:center; margin:15px 0 5px 0; border-radius:4px; font-weight:bold; text-transform:uppercase;";
-                    div.innerText = item.nome; 
-                    list.appendChild(div);
+                    // Criamos o Complexo como um BOTÃO em vez de uma DIV
+                    const btnComplexo = document.createElement('button');
+                    btnComplexo.className = "separador-complexo-btn notranslate";
+                    btnComplexo.innerText = item.nome;
+                    
+                    // Ele recebe a mesma função de clique dos outros, 
+                    // abrindo a vitrine do grupo todo
+                    btnComplexo.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
+                    
+                    list.appendChild(btnComplexo);
                 } else {
-                    // Renderiza como um botão de Residencial
                     const btn = document.createElement('button');
                     btn.className = `btRes notranslate`;
-                    
-                    // Cria um ID único para o botão para podermos marcar como 'ativo' depois
                     const idBotao = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
                     btn.id = idBotao;
+                    btn.innerHTML = `<strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                     
-                    // Monta o conteúdo do botão com o Nome e o Badge de Estoque
-                    btn.innerHTML = `
-                        <strong class="notranslate">${item.nome}</strong> 
-                        ${obterHtmlEstoque(item.estoque, item.tipo)}
-                    `;
-                    
-                    // Ação de clique: Chama a função principal do motor
-                    btn.onclick = () => {
-                        // Faz a seleção no mapa e abre a vitrine
-                        comandoSelecao(item.id_path, item.cidade, item);
-                    };
-                    
+                    btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
                     list.appendChild(btn);
                 }
             });
         }
 
-        // --- GATILHO DE INICIALIZAÇÃO ---
-        // Esta linha "liga" o sistema assim que a página termina de carregar
         window.onload = function() {
-            if (typeof iniciarApp === 'function') {
-                iniciarApp();
-            } else {
-                console.error("Erro: Função iniciarApp não encontrada no mrv-engine.js");
-            }
+            if (typeof iniciarApp === 'function') iniciarApp();
         };
     </script>
 </body>
