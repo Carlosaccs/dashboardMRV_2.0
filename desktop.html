@@ -36,7 +36,6 @@
         
         DADOS_PLANILHA.forEach(item => {
             if (item.tipo === 'N') {
-                // Registro tipo N vira um cabeçalho escuro na lista
                 const div = document.createElement('div');
                 div.style = "background:#333; color:white; padding:8px; font-size:0.75rem; text-align:center; margin:15px 0 5px 0; border-radius:4px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;";
                 div.innerText = item.nome;
@@ -44,6 +43,7 @@
             } else {
                 const btn = document.createElement('button');
                 btn.className = `btRes`;
+                // Gera o ID removendo espaços e caracteres especiais para bater com a vitrine
                 btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
                 btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
