@@ -3,6 +3,7 @@
     --mrv-verde-hover: #f0f7f0;
     --mrv-laranja: #ff8c00;
     --cinza-mapa: #999999;
+    --texto-escuro: #333;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -11,57 +12,96 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 .header { background: var(--mrv-verde); color: white; padding: 6px; text-align: center; font-weight: bold; font-size: 0.85rem; }
 .wrapper { display: flex; flex: 1; overflow: hidden; }
 
-/* 1. ESQUERDA: Travada em 280px (Tamanho que você aprovou) */
+/* 1. BARRA ESQUERDA: Ajustada para acomodar os botões sem esmagar */
 .sidebar-esq { 
     width: 280px; 
     border-right: 1px solid #ddd; 
     overflow-y: auto; 
-    padding: 8px; 
+    padding: 10px 0; 
     background: #f8f9fa; 
     flex-shrink: 0; 
 }
 
-.btRes { 
-    width: 100%; padding: 4px 8px; margin-bottom: 3px; background: #fff; 
-    border: 1px solid #eee; border-left: 4px solid var(--mrv-verde); 
-    text-align: left; cursor: pointer; border-radius: 4px;
-    display: flex; justify-content: space-between; align-items: center; 
-    font-size: 0.68rem; transition: 0.1s; min-height: 28px; 
+/* 2. REGRA DE OURO: COMPLEXO e btRes IGUAIS */
+.separador-complexo-btn, .btRes {
+    width: 92% !important;   /* Comprimento idêntico para ambos */
+    margin: 3px auto !important; /* Distância igual e centralizados */
+    height: 28px !important;  /* Altura compacta conforme o segundo print */
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 8px !important;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    cursor: pointer;
+    transition: 0.1s;
+    border: 1px solid #ddd;
 }
-.btRes strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-.btRes.ativo { background: var(--mrv-laranja) !important; color: white !important; border: 1px solid #d67e00 !important; font-weight: bold; }
 
-/* 2. CENTRO: Ocupa o que sobrar */
-.conteudo-centro { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
-#cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #555; height: 28px; }
+/* Estilo específico do COMPLEXO */
+.separador-complexo-btn {
+    background: #333 !important;
+    color: white !important;
+    justify-content: center;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none !important;
+}
 
-#caixa-a { flex: 1.3; border-bottom: 2px solid #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 15px; }
-#caixa-b { flex: 0.45; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 5px; }
+/* Estilo específico do RESIDENCIAL */
+.btRes {
+    background: #fff;
+    border-left: 4px solid var(--mrv-verde) !important;
+    justify-content: space-between;
+    color: var(--texto-escuro);
+}
 
-svg { max-width: 95%; max-height: 95%; width: auto; height: auto; }
-path { fill: var(--cinza-mapa); stroke: #ffffff; stroke-width: 0.8; }
+.btRes strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+.badge-estoque { font-size: 0.62rem; font-weight: bold; white-space: nowrap; }
+
+/* HOVERS E ATIVO */
+.btRes:hover { background: var(--mrv-verde-hover) !important; }
+.btRes.ativo { background: var(--mrv-laranja) !important; color: white !important; border-color: #d67e00 !important; }
+
+/* 3. CONTEÚDO CENTRAL: Ajuste para os mapas não "explodirem" */
+.conteudo-centro { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
+#cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #555; height: 28px; display: flex; align-items: center; justify-content: center; }
+
+#caixa-a { 
+    flex: 1.3; 
+    border-bottom: 2px solid #eee; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 15px; 
+    overflow: hidden; 
+}
+
+#caixa-b { 
+    flex: 0.45; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 10px; 
+    background: white; 
+    overflow: hidden;
+}
+
+/* Garante que o SVG respeite o container e não cresça demais */
+svg { 
+    max-width: 100%; 
+    max-height: 100%; 
+    width: auto; 
+    height: auto; 
+}
+
+path { fill: var(--cinza-mapa); stroke: #ffffff; stroke-width: 0.8; transition: 0.2s; pointer-events: all; }
+#caixa-a path.commrv { fill: var(--mrv-verde); cursor: pointer; }
 path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000 !important; stroke-width: 1.5px !important; }
 
-/* 3. DIREITA: Aumentada em 50% (fixa em 450px para não estourar) */
-.sidebar-dir { 
-    width: 450px; 
-    border-left: 1px solid #ddd; 
-    overflow-y: auto; 
-    padding: 12px; 
-    background: #fff;
-    flex-shrink: 0; 
-}
-
-/* Ajustes da Vitrine para o novo espaço */
-.vitrine-topo { background: var(--mrv-verde); color: white; padding: 6px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 10px; font-size: 0.75rem; }
-.ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0; }
-.info-box { background: #f2f2f2; padding: 8px; border-radius: 4px; border: 1px solid #e5e5e5; }
-.info-box label { display: block; font-size: 0.55rem; color: #777; font-weight: bold; text-transform: uppercase; }
-.info-box span { font-size: 0.8rem; font-weight: 600; }
-
-/* Título de Cidade/Complexo na lateral */
-.separador-complexo-btn {
-    width: 100%; background: #333; color: white; padding: 5px; 
-    margin: 8px 0 4px 0; text-align: center; font-weight: bold; 
-    font-size: 0.7rem; border-radius: 4px; text-transform: uppercase;
-}
+/* SIDEBAR DIREITA */
+.sidebar-dir { width: 320px; border-left: 1px solid #ddd; overflow-y: auto; padding: 10px; flex-shrink: 0; }
+.vitrine-topo { background: var(--mrv-verde); color: white; padding: 5px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 10px; font-size: 0.7rem; }
+.ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin: 8px 0; }
+.info-box { background: #f2f2f2; padding: 5px; border-radius: 4px; border: 1px solid #e5e5e5; }
+.info-box label { display: block; font-size: 0.5rem; color: #777; font-weight: bold; text-transform: uppercase; }
+.info-box span { font-size: 0.72rem; font-weight: 600; }
