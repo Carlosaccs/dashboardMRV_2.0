@@ -30,7 +30,6 @@ async function carregarPlanilha() {
         const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
         let texto = await response.text();
         
-        // Divide as linhas respeitando quebras de linha dentro de aspas (comum em descrições longas)
         const linhas = [];
         let linhaAtual = "";
         let dentroDeAspas = false;
@@ -166,6 +165,9 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
     if (btnEsq) btnEsq.classList.add('ativo');
 
+    // Link do Maps gerado dinamicamente
+    const urlMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selecionado.endereco)}`;
+
     let html = `
         <div class="vitrine-topo notranslate">MRV EM ${nomeRegiao.toUpperCase()}</div>
         <div style="margin-bottom:15px;">
@@ -173,7 +175,10 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
         </div>
         <div class="separador-complexo-btn notranslate">${selecionado.nome.toUpperCase()}</div>
         <div style="padding-top:10px;">
-            <p style="font-size:0.75rem; color:#444; margin-bottom:12px; font-weight:500;">📍 ${selecionado.endereco}</p>
+            <p style="font-size:0.75rem; color:#444; margin-bottom:12px; font-weight:500; display: flex; align-items: center; justify-content: space-between;">
+                <span>📍 ${selecionado.endereco}</span>
+                <a href="${urlMaps}" target="_blank" class="btn-maps">🗺️ Abrir Maps</a>
+            </p>
     `;
 
     if (selecionado.tipo === 'N') {
