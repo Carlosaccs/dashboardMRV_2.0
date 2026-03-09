@@ -218,8 +218,4 @@ path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000 !important; 
 
 .badge-estoque { font-size: 0.62rem; font-weight: bold; }
 
-Ficou ótimo!!
 
-Só falta diminuir 20% o comprimento do btRes e fazer o que vc disse sobre a dustancia entre os btRes:
-
-Equalização: Removi o margin-top: 15px que existia nos títulos de Complexo. Agora, tanto o Complexo quanto o Residencial usam margin: 4px auto, o que cria uma fila perfeitamente simétrica.
