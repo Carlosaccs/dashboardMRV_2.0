@@ -26,14 +26,14 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 .separador-complexo-btn, .btRes {
     width: 92% !important;   /* Comprimento idêntico para ambos */
     margin: 3px auto !important; /* Distância igual e centralizados */
-    height: 28px !important;  /* Altura compacta conforme o segundo print */
+    height: 28px !important;  /* Altura compacta */
     display: flex !important;
     align-items: center !important;
     padding: 0 8px !important;
     border-radius: 4px;
     font-size: 0.68rem;
     cursor: pointer;
-    transition: 0.1s;
+    transition: 0.2s; /* Transição suave para o efeito de hover */
     border: 1px solid #ddd;
 }
 
@@ -58,11 +58,23 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 .btRes strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
 .badge-estoque { font-size: 0.62rem; font-weight: bold; white-space: nowrap; }
 
-/* HOVERS E ATIVO */
-.btRes:hover { background: var(--mrv-verde-hover) !important; }
-.btRes.ativo { background: var(--mrv-laranja) !important; color: white !important; border-color: #d67e00 !important; }
+/* HOVERS (Ajustado conforme pedido: destaque com borda verde) */
+.btRes:hover { 
+    background: var(--mrv-verde-hover) !important; 
+    border-color: var(--mrv-verde) !important; /* Borda externa fica verde no hover */
+    border-left-width: 6px !important; /* Borda lateral fica mais grossa */
+}
 
-/* 3. CONTEÚDO CENTRAL: Ajuste para os mapas não "explodirem" */
+.separador-complexo-btn:hover { background: #444 !important; }
+
+/* ATIVO */
+.btRes.ativo { 
+    background: var(--mrv-laranja) !important; 
+    color: white !important; 
+    border: 1px solid #d67e00 !important; 
+}
+
+/* 3. CONTEÚDO CENTRAL */
 .conteudo-centro { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 #cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #555; height: 28px; display: flex; align-items: center; justify-content: center; }
 
@@ -86,7 +98,6 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
     overflow: hidden;
 }
 
-/* Garante que o SVG respeite o container e não cresça demais */
 svg { 
     max-width: 100%; 
     max-height: 100%; 
