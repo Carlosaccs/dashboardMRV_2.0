@@ -31,7 +31,9 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 
 .sidebar-esq .btRes, .sidebar-esq .separador-complexo-btn { width: 92% !important; margin: 4px auto !important; }
 
-.separador-complexo-btn { background: #333 !important; color: white !important; justify-content: center !important; font-weight: bold; text-transform: uppercase; border: none !important; cursor: default; }
+.separador-complexo-btn { background: #333 !important; color: white !important; justify-content: center !important; font-weight: bold; text-transform: uppercase; border: none !important; }
+/* Destaque laranja para o botão do complexo quando selecionado */
+.separador-complexo-btn.ativo { background: var(--mrv-laranja) !important; color: white !important; }
 
 .btRes { background: #fff; border-left: 4px solid var(--mrv-verde) !important; justify-content: space-between; color: var(--texto-escuro); }
 .btRes:hover { background: #f0f0f0 !important; border-color: var(--mrv-verde) !important; border-left-width: 6px !important; }
@@ -62,17 +64,7 @@ path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000 !important; 
 .info-box label { display: block; font-size: 0.5rem; color: #777; font-weight: bold; text-transform: uppercase; margin-bottom: 3px; }
 .info-box span { font-size: 0.72rem; font-weight: 600; }
 
-/* Estilo para o texto longo do complexo com suporte a parágrafos */
-.desc-longa-texto { 
-    font-size: 0.82rem; 
-    line-height: 1.6; 
-    color: #333; 
-    padding: 15px; 
-    background: #fdfdfd; 
-    border-radius: 6px; 
-    border: 1px solid #eee; 
-    text-align: justify;
-}
+.desc-longa-texto { font-size: 0.82rem; line-height: 1.6; color: #333; padding: 15px; background: #fdfdfd; border-radius: 6px; border: 1px solid #eee; text-align: justify; }
 .desc-longa-texto p { margin-bottom: 14px; }
 .desc-longa-texto p:last-child { margin-bottom: 0; }
 
