@@ -7,7 +7,7 @@ const COL = {
     ID: 0, TIPO: 1, ORDEM: 2, NOME: 3, NOME_FULL: 4, 
     ESTOQUE: 5, END: 6, PRECO: 7, ENTREGA: 8, 
     P_DE: 9, P_ATE: 10, OBRA: 11, DICA: 12, 
-    DESC_LONGA: 13, // Coluna para o texto do complexo
+    DESC_LONGA: 13, 
     BK_CLI: 20
 };
 
@@ -30,6 +30,7 @@ async function carregarPlanilha() {
         const response = await fetch(`${URL_CSV}&v=${new Date().getTime()}`);
         let texto = await response.text();
         
+        // Mantive a limpeza de quebras de linha dentro de aspas para não quebrar o CSV
         texto = texto.replace(/"([^"]*)"/g, (m, p1) => p1.replace(/\r?\n|\r/g, " "));
         const linhas = texto.split(/\r?\n/).filter(l => l.trim() !== "");
         
@@ -57,7 +58,6 @@ async function carregarPlanilha() {
         }).filter(i => i.id_path !== "" && i.nome.length > 2);
 
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
-
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
         desenharMapas(); 
 
@@ -74,17 +74,12 @@ function renderizarNoContainer(id, dados, interativo) {
     const pathsHtml = dados.paths.map(p => {
         const idPathNormalizado = p.id.toLowerCase().replace(/\s/g, '');
         const temMRV = DADOS_PLANILHA.some(d => d.id_path === idPathNormalizado);
-        
         const isGrandeSP = p.name.toLowerCase().includes("grande são paulo") || p.id.toLowerCase() === "grandesaopaulo";
         const idAtributo = isGrandeSP ? 'id="grandesaopaulo"' : `id="${id}-${p.id}"`;
         
         let acaoClique = "";
         if (interativo) {
-            if (isGrandeSP) {
-                acaoClique = `onclick="trocarMapas()"`;
-            } else {
-                acaoClique = `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"`;
-            }
+            acaoClique = isGrandeSP ? `onclick="trocarMapas()"` : `onclick="cliqueNoMapa('${p.id}', '${p.name}', ${temMRV})"`;
         }
 
         const acoesHover = interativo ? `onmouseover="hoverNoMapa('${p.name}')" onmouseout="resetTitulo()"` : "";
@@ -121,7 +116,6 @@ function comandoSelecao(idPath, nomePath, fonte) {
     if (imoveis.length > 0) {
         const selecionado = (fonte && fonte.nome) ? fonte : imoveis[0];
         
-        // --- TROCA DE MAPA AUTOMÁTICA ---
         const estaNaGrandeSP = MAPA_GSP.paths.some(p => p.id.toLowerCase().replace(/\s/g, '') === idBusca);
         if (estaNaGrandeSP && mapaAtivo !== 'GSP') {
             mapaAtivo = 'GSP';
@@ -171,9 +165,9 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
 
     if (selecionado.tipo === 'N') {
         htmlBase += `
-            <div class="info-box" style="background:#f9f9f9; border-left: 3px solid #333; min-height:100px;">
+            <div class="info-box" style="background:#f9f9f9; border-left: 3px solid #333;">
                 <label>Sobre o Complexo</label>
-                <p style="font-size:0.75rem; line-height:1.4; color:#444; padding-top:5px;">${selecionado.descLonga || "Descrição do complexo disponível em breve."}</p>
+                <div class="desc-longa-texto">${selecionado.descLonga || "Descrição não disponível."}</div>
             </div>
         `;
     } else {
