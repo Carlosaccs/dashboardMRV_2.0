@@ -159,8 +159,12 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const painel = document.getElementById('ficha-tecnica');
     if (!painel) return;
 
-    const outros = listaDaCidade.filter(i => i.nome !== selecionado.nome && i.tipo !== 'N');
-    document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
+    // Localiza o objeto do COMPLEXO na lista da cidade
+    const objComplexo = listaDaCidade.find(i => i.tipo === 'N');
+    // Filtra apenas os RESIDENCIAIS (excluindo o selecionado se for residencial)
+    const residenciais = listaDaCidade.filter(i => i.tipo !== 'N' && i.nome !== selecionado.nome);
+
+    document.querySelectorAll('.btRes, .separador-complexo-btn').forEach(b => b.classList.remove('ativo'));
     const idLimpo = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
     const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
     if (btnEsq) btnEsq.classList.add('ativo');
@@ -170,9 +174,22 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     let html = `
         <div class="vitrine-topo notranslate">MRV EM ${nomeRegiao.toUpperCase()}</div>
         <div style="margin-bottom:15px;">
-            ${outros.map(o => `<button class="btRes notranslate" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')"><strong class="notranslate">${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('')}
-        </div>
-        <div class="separador-complexo-btn notranslate">${selecionado.nome.toUpperCase()}</div>
+    `;
+
+    // 1. O botão do COMPLEXO sempre aparece primeiro se existir
+    if (objComplexo) {
+        const classeAtivo = (selecionado.tipo === 'N') ? 'ativo' : '';
+        html += `<button class="separador-complexo-btn notranslate ${classeAtivo}" style="cursor:pointer;" onclick="navegarVitrine('${objComplexo.nome}', '${nomeRegiao}')">${objComplexo.nome.toUpperCase()}</button>`;
+    }
+
+    // 2. Lista os outros residenciais abaixo
+    html += residenciais.map(o => `<button class="btRes notranslate" onclick="navegarVitrine('${o.nome}', '${nomeRegiao}')"><strong class="notranslate">${o.nome}</strong> ${obterHtmlEstoque(o.estoque, o.tipo)}</button>`).join('');
+    
+    html += `</div>`;
+
+    // 3. Título do item ATUALMENTE selecionado
+    html += `
+        <div class="separador-complexo-btn notranslate ativo">${selecionado.nome.toUpperCase()}</div>
         <div style="padding-top:10px;">
             <p style="font-size:0.75rem; color:#444; margin-bottom:12px; font-weight:500; display: flex; align-items: center; justify-content: space-between;">
                 <span>📍 ${selecionado.endereco}</span>
@@ -181,13 +198,11 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     `;
 
     if (selecionado.tipo === 'N') {
-        // Lógica de Parágrafos: Separa por quebra de linha e envolve em <p>
         const textoProcessado = selecionado.descLonga
             .split('\n')
             .filter(paragrafo => paragrafo.trim() !== '')
             .map(paragrafo => `<p>${paragrafo.trim()}</p>`)
             .join('');
-
         html += `<div class="desc-longa-texto">${textoProcessado || "Descrição em breve."}</div>`;
     } else {
         html += `
