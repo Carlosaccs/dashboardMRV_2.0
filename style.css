@@ -1,11 +1,8 @@
 :root {
     --mrv-verde: #065e03;
-    --mrv-verde-hover: #088a04;
     --mrv-laranja: #ff8c00;
-    --cinza-mapa: #777777;
-    --cinza-hover: #999999;
-    --texto-escuro: #333;
     --vermelho-mrv: #e31010;
+    --texto-escuro: #333;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -26,14 +23,12 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
     border-radius: 4px;
     font-size: 0.68rem;
     cursor: pointer;
-    transition: 0.1s;
     border: 1px solid #ddd;
 }
 
 .sidebar-esq .btRes, .sidebar-esq .separador-complexo-btn { width: 92% !important; margin: 4px auto !important; }
 
 .separador-complexo-btn { background: #333 !important; color: white !important; justify-content: center !important; font-weight: bold; text-transform: uppercase; border: none !important; }
-
 .btRes { background: #fff; border-left: 4px solid var(--mrv-verde) !important; justify-content: space-between; color: var(--texto-escuro); }
 .btRes.ativo, .separador-complexo-btn.ativo { background: var(--mrv-laranja) !important; color: white !important; border-color: #d67e00 !important; }
 
@@ -47,16 +42,14 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 #caixa-b { flex: 0.45; display: flex; align-items: center; justify-content: center; padding: 10px; background: white; overflow: hidden; }
 
 svg { max-width: 100%; max-height: 100%; width: auto; height: auto; }
-path { fill: var(--cinza-mapa) !important; stroke: #ffffff; stroke-width: 0.8; pointer-events: all; }
+path { fill: #777; stroke: #ffffff; stroke-width: 0.8; pointer-events: all; }
 path.commrv { fill: var(--mrv-verde) !important; cursor: pointer; }
 path.commrv:hover, path.path-ativo { fill: var(--mrv-laranja) !important; stroke: #000 !important; stroke-width: 1px !important; }
 
 .sidebar-dir { width: 480px; border-left: 1px solid #ddd; overflow-y: auto; padding: 10px; flex-shrink: 0; background: #fff; }
 .vitrine-topo { background: var(--mrv-verde); color: white; padding: 8px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; }
 
-/* Grid das informações em linha */
 .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 8px 0; }
-
 .info-box { 
     background: #f2f2f2; 
     padding: 6px 10px; 
@@ -69,7 +62,6 @@ path.commrv:hover, path.path-ativo { fill: var(--mrv-laranja) !important; stroke
 .info-box label { font-size: 0.55rem; color: #666; font-weight: bold; text-transform: uppercase; }
 .info-box span { font-size: 0.7rem; font-weight: 700; color: #333; }
 
-/* Caixa de Documentos (Vermelho) */
 .box-documentos {
     grid-column: span 2;
     background: #fff0f0;
@@ -83,16 +75,25 @@ path.commrv:hover, path.path-ativo { fill: var(--mrv-laranja) !important; stroke
 }
 .box-documentos span { color: var(--vermelho-mrv); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; text-align: center; }
 
-/* Dica do Corretor */
-.box-dica {
-    margin-top: 8px;
-    background: #fffde6;
+/* Estilo para as caixas de argumentos (Dica, Obs, Localização, etc) */
+.box-argumento {
+    margin-top: 6px;
     padding: 8px;
     border-radius: 4px;
-    border-left: 4px solid #f3d221;
+    border-left: 4px solid #ddd;
 }
-.box-dica label { display: block; font-size: 0.5rem; font-weight: bold; color: #857200; text-transform: uppercase; margin-bottom: 2px; }
-.box-dica p { font-size: 0.72rem; color: #444; line-height: 1.3; }
+.box-argumento label { display: block; font-size: 0.52rem; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+.box-argumento p { font-size: 0.72rem; color: #444; line-height: 1.3; }
+
+/* Cores específicas para cada tipo */
+.box-dica { background: #fffde6; border-left-color: #f3d221; }
+.box-dica label { color: #857200; }
+
+.box-obs { background: #f0f7ff; border-left-color: #2196f3; }
+.box-obs label { color: #0d47a1; }
+
+.box-infra { background: #f4f4f4; border-left-color: #666; }
+.box-infra label { color: #333; }
 
 .desc-longa-texto { font-size: 0.82rem; line-height: 1.6; color: #333; padding: 15px; background: #fdfdfd; border-radius: 6px; border: 1px solid #eee; text-align: justify; }
 .desc-longa-texto p { margin-bottom: 14px; }
@@ -107,5 +108,4 @@ path.commrv:hover, path.path-ativo { fill: var(--mrv-laranja) !important; stroke
     border-radius: 4px;
     font-size: 0.65rem;
     font-weight: bold;
-    transition: 0.2s;
 }
