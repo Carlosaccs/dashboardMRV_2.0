@@ -3,11 +3,13 @@ let pathSelecionado = null;
 let nomeSelecionado = ""; 
 let mapaAtivo = 'GSP'; 
 
-// Mapeamento atualizado conforme sua nova planilha
+// Mapeamento baseado na sua sequência exata de colunas
 const COL = {
     ID: 0, CATEGORIA: 1, ORDEM: 2, NOME: 3, NOME_FULL: 4, 
     ESTOQUE: 5, END: 6, PRECO: 7, ENTREGA: 8, 
-    P_DE: 9, P_ATE: 10, OBRA: 11, DOCUMENTOS: 12, DICA: 13, 
+    P_DE: 9, P_ATE: 10, OBRA: 11, DOCUMENTOS: 12, 
+    DICA: 13, OBS: 15, LOCALIZACAO: 16, MOBILIDADE: 17, 
+    CULTURA: 18, COMERCIO: 19, SAUDE: 20,
     DESC_LONGA: 14, BK_CLI: 21
 };
 
@@ -73,20 +75,24 @@ async function carregarPlanilha() {
                 nomeFull: colunas[COL.NOME_FULL] || colunas[COL.NOME],
                 estoque: colunas[COL.ESTOQUE] || "",
                 endereco: colunas[COL.END] || "",
-                cidade: colunas[COL.ID] ? colunas[COL.ID].toUpperCase() : "", 
                 entrega: colunas[COL.ENTREGA] || "",
                 preco: colunas[COL.PRECO] || "",
                 plantas: (colunas[COL.P_DE] || colunas[COL.P_ATE]) ? `De ${colunas[COL.P_DE]} a ${colunas[COL.P_ATE]}` : "Consulte",
                 obra: colunas[COL.OBRA] || "0",
                 documentos: colunas[COL.DOCUMENTOS] || "",
                 dica: colunas[COL.DICA] || "",
+                obs: colunas[COL.OBS] || "",
+                localizacao: colunas[COL.LOCALIZACAO] || "",
+                mobilidade: colunas[COL.MOBILIDADE] || "",
+                cultura: colunas[COL.CULTURA] || "",
+                comercio: colunas[COL.COMERCIO] || "",
+                saude: colunas[COL.SAUDE] || "",
                 descLonga: colunas[COL.DESC_LONGA] || "",
                 book: limparLinkDrive(colunas[COL.BK_CLI] || "")
             };
         }).filter(i => i.id_path !== "" && i.nome.length > 2);
 
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
-        if (typeof gerarListaLateral === 'function') gerarListaLateral();
         desenharMapas(); 
 
     } catch (e) { 
@@ -140,8 +146,7 @@ function comandoSelecao(idPath, nomePath, fonte) {
     if (imoveis.length > 0) {
         const selecionado = (fonte && fonte.nome) ? fonte : imoveis[0];
         nomeSelecionado = nomePath;
-        const titulo = document.getElementById('cidade-titulo');
-        if (titulo) titulo.innerText = nomePath;
+        document.getElementById('cidade-titulo').innerText = nomePath;
         
         if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
         const el = document.getElementById(`caixa-a-${idPath}`) || document.getElementById('grandesaopaulo');
@@ -168,7 +173,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
         </div>
     `;
 
-    // Item em Destaque (Laranja)
+    // Botão Destaque (Laranja)
     if (selecionado.tipo === 'N') {
         html += `<div class="separador-complexo-btn ativo">${selecionado.nome.toUpperCase()}</div>`;
     } else {
@@ -184,8 +189,8 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     `;
 
     if (selecionado.tipo === 'N') {
-        const textoProcessado = selecionado.descLonga.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p.trim()}</p>`).join('');
-        html += `<div class="desc-longa-texto">${textoProcessado || "Descrição em breve."}</div>`;
+        const textoDesc = selecionado.descLonga.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p.trim()}</p>`).join('');
+        html += `<div class="desc-longa-texto">${textoDesc || "Descrição em breve."}</div>`;
     } else {
         html += `
             <div class="ficha-grid">
@@ -195,8 +200,16 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
                 <div class="info-box"><label>Obra</label><span>${selecionado.obra}%</span></div>
                 ${selecionado.documentos ? `<div class="box-documentos"><span>${selecionado.documentos}</span></div>` : ''}
             </div>
-            ${selecionado.dica ? `<div class="box-dica"><label>Dica do Corretor</label><p>${selecionado.dica}</p></div>` : ''}
-            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:#00713a; color:white; justify-content:center; font-weight:bold; margin-top:10px; border:none; width:100% !important;">📄 BOOK CLIENTE</a>
+
+            ${selecionado.dica ? `<div class="box-argumento box-dica"><label>DICA:</label><p>${selecionado.dica}</p></div>` : ''}
+            ${selecionado.obs ? `<div class="box-argumento box-obs"><label>OBSERVAÇÃO:</label><p>${selecionado.obs}</p></div>` : ''}
+            ${selecionado.localizacao ? `<div class="box-argumento box-infra"><label>LOCALIZAÇÃO:</label><p>${selecionado.localizacao}</p></div>` : ''}
+            ${selecionado.mobilidade ? `<div class="box-argumento box-infra"><label>MOBILIDADE:</label><p>${selecionado.mobilidade}</p></div>` : ''}
+            ${selecionado.cultura ? `<div class="box-argumento box-infra"><label>LAZER E CULTURA:</label><p>${selecionado.cultura}</p></div>` : ''}
+            ${selecionado.comercio ? `<div class="box-argumento box-infra"><label>COMÉRCIO:</label><p>${selecionado.comercio}</p></div>` : ''}
+            ${selecionado.saude ? `<div class="box-argumento box-infra"><label>SAÚDE E EDUCAÇÃO:</label><p>${selecionado.saude}</p></div>` : ''}
+
+            <a href="${selecionado.book}" target="_blank" class="btRes" style="background:#00713a; color:white; justify-content:center; font-weight:bold; margin-top:12px; border:none; width:100% !important;">📄 BOOK CLIENTE</a>
         `;
     }
 
