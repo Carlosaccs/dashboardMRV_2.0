@@ -159,14 +159,14 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     const painel = document.getElementById('ficha-tecnica');
     if (!painel) return;
 
-    // Filtra para mostrar apenas botões que NÃO são o item atualmente selecionado
-    const botoesSuperiores = listaDaCidade.filter(i => i.nome !== selecionado.nome);
-
-    // Reseta destaques na esquerda
+    // Sincroniza destaque na esquerda
     document.querySelectorAll('.btRes, .separador-complexo-btn').forEach(b => b.classList.remove('ativo'));
-    const idLimpo = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
-    const btnEsq = document.getElementById(`btn-esq-${idLimpo}`);
+    const idLimpoParaEsq = selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-');
+    const btnEsq = document.getElementById(`btn-esq-${idLimpoParaEsq}`);
     if (btnEsq) btnEsq.classList.add('ativo');
+
+    // Filtra para mostrar na lista apenas quem NÃO é o selecionado
+    const listaSuperior = listaDaCidade.filter(i => i.nome !== selecionado.nome);
 
     const urlMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selecionado.endereco)}`;
 
@@ -175,10 +175,10 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
         <div style="margin-bottom:15px;">
     `;
 
-    // Renderiza a lista de botões superiores (excluindo o atual)
-    botoesSuperiores.forEach(item => {
+    // 1. RENDERIZA LISTA SUPERIOR (Apenas botões não-selecionados)
+    listaSuperior.forEach(item => {
         if (item.tipo === 'N') {
-            html += `<button class="separador-complexo-btn notranslate" style="cursor:pointer;" onclick="navegarVitrine('${item.nome}', '${nomeRegiao}')">${item.nome.toUpperCase()}</button>`;
+            html += `<button class="separador-complexo-btn notranslate" onclick="navegarVitrine('${item.nome}', '${nomeRegiao}')">${item.nome.toUpperCase()}</button>`;
         } else {
             html += `<button class="btRes notranslate" onclick="navegarVitrine('${item.nome}', '${nomeRegiao}')"><strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}</button>`;
         }
@@ -186,13 +186,14 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     
     html += `</div>`;
 
-    // BLOCO DE DESTAQUE (O item selecionado desce para cá)
+    // 2. ITEM SELECIONADO (O que "desceu" e agora fica em destaque laranja)
     if (selecionado.tipo === 'N') {
         html += `<div class="separador-complexo-btn notranslate ativo">${selecionado.nome.toUpperCase()}</div>`;
     } else {
         html += `<button class="btRes notranslate ativo"><strong class="notranslate">${selecionado.nome}</strong> ${obterHtmlEstoque(selecionado.estoque, selecionado.tipo)}</button>`;
     }
 
+    // 3. CONTEÚDO DE DETALHES
     html += `
         <div style="padding-top:10px;">
             <p style="font-size:0.75rem; color:#444; margin-bottom:12px; font-weight:500; display: flex; align-items: center; justify-content: space-between;">
@@ -204,8 +205,8 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     if (selecionado.tipo === 'N') {
         const textoProcessado = selecionado.descLonga
             .split('\n')
-            .filter(paragrafo => paragrafo.trim() !== '')
-            .map(paragrafo => `<p>${paragrafo.trim()}</p>`)
+            .filter(p => p.trim() !== '')
+            .map(p => `<p>${p.trim()}</p>`)
             .join('');
         html += `<div class="desc-longa-texto">${textoProcessado || "Descrição em breve."}</div>`;
     } else {
