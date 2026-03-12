@@ -46,9 +46,9 @@ async function carregarPlanilha() {
             }
             colunas.push(campo.trim());
 
-            // LOGICA DE CATEGORIA MAIS FLEXIVEL (Resolve o sumiço dos complexos)
-            const catRes = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase().trim() : "";
-            const ehComplexo = (catRes === 'COMPLEXO' || catRes === 'N' || catRes === 'COMPLEXOS');
+            // Filtro de Categoria ultra-robusto
+            const catRaw = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase().trim() : "";
+            const ehComplexo = (catRaw.includes('COMPLEXO') || catRaw === 'N');
 
             return {
                 id_path: colunas[COL.ID] ? colunas[COL.ID].toLowerCase().replace(/\s/g, '') : "",
@@ -108,7 +108,6 @@ function cliqueNoMapa(id, nome, temMRV) { if (temMRV) comandoSelecao(id, nome); 
 function comandoSelecao(idPath, nomePath, fonte) {
     const idBusca = idPath.toLowerCase().replace(/\s/g, '');
     
-    // AUTO-SWITCH: Verifica se a cidade pertence ao mapa que NÃO está ativo
     const estaNaGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase().replace(/\s/g, '') === idBusca);
     const estaNoInterior = MAPA_INTERIOR.paths.some(p => p.id.toLowerCase().replace(/\s/g, '') === idBusca);
 
@@ -178,7 +177,28 @@ function navegarVitrine(nome, nomeRegiao) {
 
 function hoverNoMapa(nome) { document.getElementById('cidade-titulo').innerText = nome; }
 function resetTitulo() { document.getElementById('cidade-titulo').innerText = nomeSelecionado || "Selecione uma região"; }
-function trocarMapas() { mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; desenharMapas(); }
+
+function trocarMapas() { 
+    mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; 
+    desenharMapas();
+    limparInterface(); // Limpa vitrine e destaques ao trocar mapa
+}
+
+function limparInterface() {
+    nomeSelecionado = "";
+    pathSelecionado = null;
+    document.getElementById('cidade-titulo').innerText = "Selecione uma região no mapa ou na lista";
+    
+    // Limpa Vitrine
+    document.getElementById('ficha-tecnica').innerHTML = `
+        <div style="text-align:center; color:#ccc; margin-top:100px;">
+            <p style="font-size: 30px;">📍</p>
+            <p>Clique em algum Residencial ou em alguma região verde do mapa</p>
+        </div>`;
+    
+    // Remove destaques de todos os botões da esquerda
+    document.querySelectorAll('.btRes, .separador-complexo-btn').forEach(btn => btn.classList.remove('ativo'));
+}
 
 function obterHtmlEstoque(valor, tipo) {
     if (tipo === 'N') return "";
