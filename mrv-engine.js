@@ -19,12 +19,16 @@ async function iniciarApp() {
 
 async function carregarPlanilha() {
     const SHEET_ID = "15V194P2JPGCCPpCTKJsib8sJuCZPgtbNb-rtgNaLS7E";
-    // O v=${new Date().getTime()} serve para ignorar o cache e pegar a planilha AGORA
     const URL_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&v=${new Date().getTime()}`;
     
     try {
         const response = await fetch(URL_CSV);
         let texto = await response.text();
+        
+        // CORREÇÃO CRUCIAL: Adiciona uma quebra de linha manual no fim do texto 
+        // para garantir que a última linha seja processada corretamente.
+        if (!texto.endsWith('\n')) texto += '\n';
+
         const linhas = [];
         let linhaAtual = "", dentroDeAspas = false;
         
@@ -37,9 +41,7 @@ async function carregarPlanilha() {
             } else { linhaAtual += char; }
         }
 
-        console.log("Total de linhas lidas da planilha:", linhas.length);
-
-        DADOS_PLANILHA = linhas.slice(1).map((linha, index) => {
+        DADOS_PLANILHA = linhas.slice(1).map(linha => {
             const colunas = [];
             let campo = "", aspas = false;
             for (let i = 0; i < linha.length; i++) {
@@ -50,8 +52,8 @@ async function carregarPlanilha() {
             }
             colunas.push(campo.trim());
 
-            const catRaw = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase() : "";
-            const ehComplexo = (catRaw.includes('COMPLEXO') || catRaw === 'N');
+            const catLimpa = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase() : "";
+            const ehComplexo = catLimpa.includes('COMPLEXO');
 
             return {
                 id_path: colunas[COL.ID] ? colunas[COL.ID].toLowerCase().replace(/\s/g, '') : "",
@@ -62,7 +64,7 @@ async function carregarPlanilha() {
                 estoque: colunas[COL.ESTOQUE] || "",
                 endereco: colunas[COL.END] || "",
                 entrega: colunas[COL.ENTREGA] || "",
-                preco: colunas[COL.PRECO] || "Consulte",
+                preco: colunas[COL.P_DE] || "Consulte",
                 p_de: colunas[COL.P_DE] || "-",
                 obra: colunas[COL.OBRA] || "0",
                 documentos: colunas[COL.DOCUMENTOS] || "",
@@ -72,17 +74,13 @@ async function carregarPlanilha() {
             };
         }).filter(i => i.nome && i.nome.length > 2);
 
-        // --- VERIFICAÇÃO DE EMERGÊNCIA ---
-        const nomesLidos = DADOS_PLANILHA.map(d => d.nome).join(" | ");
-        console.log("Nomes carregados no sistema:", nomesLidos);
-
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
         desenharMapas();
     } catch (e) { console.error("Erro CSV:", e); }
 }
 
-// ... (Restante das funções: renderizarNoContainer, trocarMapas, etc. permanecem iguais à última versão)
+// ... manter demais funções idênticas ...
 
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
