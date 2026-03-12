@@ -1,5 +1,5 @@
 :root {
-    --mrv-verde: #065e03;
+    --mrv-verde: #00713a; /* Ajustado para o tom oficial das fotos */
     --mrv-laranja: #ff8c00;
     --vermelho-mrv: #e31010;
     --texto-escuro: #333;
@@ -8,8 +8,26 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: white; }
 
-.header { background: var(--mrv-verde); color: white; padding: 6px; text-align: center; font-weight: bold; font-size: 0.85rem; }
-.wrapper { display: flex; flex: 1; overflow: hidden; }
+/* FAIXA VERDE CENTRALIZADA */
+.header { 
+    background: var(--mrv-verde) !important; 
+    color: white !important; 
+    height: 48px !important; 
+    display: flex !important;
+    align-items: center !important;    /* Meio vertical */
+    justify-content: center !important; /* Meio horizontal */
+    font-weight: bold; 
+    font-size: 1.3rem; 
+    text-align: center;
+    width: 100%;
+}
+
+.wrapper { 
+    display: flex; 
+    flex: 1; 
+    height: calc(100vh - 48px); /* Desconta a faixa exata */
+    overflow: hidden; 
+}
 
 /* Barra Lateral Esquerda */
 .sidebar-esq { width: 280px; border-right: 1px solid #ddd; overflow-y: auto; padding: 10px 0; background: #f8f9fa; flex-shrink: 0; }
@@ -45,7 +63,18 @@ body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; b
 .conteudo-centro { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
 #cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #555; height: 28px; display: flex; align-items: center; justify-content: center; }
 
-#caixa-a { flex: 1.3; border-bottom: 2px solid #eee; display: flex; align-items: center; justify-content: center; padding: 10px; overflow: hidden; background: #f9f9f9; }
+/* CAIXA DO MAPA SEM COR E SEM BORDAS */
+#caixa-a { 
+    flex: 1.3; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    padding: 10px; 
+    overflow: hidden; 
+    background: transparent !important; /* Removido o cinza */
+    border: none !important;            /* Removida a borda inferior */
+}
+
 #caixa-b { flex: 0.45; display: flex; align-items: center; justify-content: center; padding: 10px; background: white; overflow: hidden; }
 
 /* MAPAS */
