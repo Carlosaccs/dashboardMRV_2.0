@@ -61,20 +61,20 @@ path.commrv:hover, path.path-ativo { fill: var(--mrv-laranja) !important; stroke
 .sidebar-dir { width: 480px; border-left: 1px solid #ddd; overflow-y: auto; padding: 15px; flex-shrink: 0; background: #fff; }
 .vitrine-topo { background: var(--mrv-verde); color: white; padding: 8px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; }
 
-/* --- NOVO LAYOUT DE CARDS (DESENHO) --- */
-.grid-info { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+/* Layout de Cards Horizontal */
+.linha-cards { display: flex; gap: 5px; margin-bottom: 5px; width: 100%; }
 
 .card-mini { 
-    background: #f2f2f2; flex: 1; min-width: 30%; padding: 8px; 
-    border-radius: 4px; display: flex; flex-direction: column; align-items: center;
+    background: #f2f2f2; flex: 1; padding: 6px; 
+    border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
 }
-.card-full { 
-    background: #f2f2f2; width: 100%; padding: 8px; 
+.card-half { 
+    background: #f2f2f2; flex: 1; padding: 6px; 
     border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
 }
 
-.card-mini label, .card-full label { font-size: 0.6rem; color: #00713a; font-weight: bold; text-transform: uppercase; }
-.card-mini span, .card-full span { font-size: 0.75rem; font-weight: bold; color: #333; }
+.card-mini label, .card-half label { font-size: 0.65rem; color: #00713a; font-weight: bold; text-transform: uppercase; }
+.card-mini span, .card-half span { font-size: 0.75rem; font-weight: bold; color: #333; }
 
 .box-preco { display: flex; border-top: 1px solid #eee; margin-top: 5px; }
 .col-preco { flex: 1; padding: 10px; text-align: center; font-size: 0.7rem; color: #666; background: #f9f9f9; }
