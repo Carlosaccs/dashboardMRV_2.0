@@ -11,6 +11,13 @@ const COL = {
 };
 
 async function iniciarApp() {
+    // AJUSTE: Atualiza o título e a faixa verde conforme solicitado
+    const topo = document.querySelector('.topo-dashboard');
+    if (topo) {
+        topo.innerText = "RESIDENCIAIS MRV EM SÃO PAULO";
+        topo.style.padding = "20px 0"; // Deixa a faixa mais larga
+    }
+
     try {
         if (typeof MAPA_GSP !== 'undefined') desenharMapas();
         await carregarPlanilha();
@@ -25,8 +32,6 @@ async function carregarPlanilha() {
         const response = await fetch(URL_CSV);
         let texto = await response.text();
         
-        // CORREÇÃO CRUCIAL: Adiciona uma quebra de linha manual no fim do texto 
-        // para garantir que a última linha seja processada corretamente.
         if (!texto.endsWith('\n')) texto += '\n';
 
         const linhas = [];
@@ -80,8 +85,6 @@ async function carregarPlanilha() {
     } catch (e) { console.error("Erro CSV:", e); }
 }
 
-// ... manter demais funções idênticas ...
-
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
     if (!container || !dados) return;
@@ -95,7 +98,14 @@ function renderizarNoContainer(id, dados, interativo) {
         const classe = (temMRV || isGSP) && interativo ? 'commrv' : '';
         return `<path id="${id}-${p.id}" name="${p.name}" d="${p.d}" class="${classe}" ${clique} ${hover}></path>`;
     }).join('');
-    container.innerHTML = `<svg viewBox="${dados.viewBox}" preserveAspectRatio="xMidYMid meet"><g transform="${dados.transform || ''}">${pathsHtml}</g></svg>`;
+
+    // AJUSTE: Transform scale(1.15) aplicado diretamente no grupo do SVG para aumentar o mapa
+    container.innerHTML = `
+        <svg viewBox="${dados.viewBox}" preserveAspectRatio="xMidYMid meet">
+            <g transform="scale(1.15) ${dados.transform || ''}" style="transform-origin: center;">
+                ${pathsHtml}
+            </g>
+        </svg>`;
 }
 
 function desenharMapas() {
