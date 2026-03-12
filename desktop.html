@@ -6,10 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard MRV SP - v9.6</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Ajuste da Faixa Verde conforme solicitado */
+        .header {
+            background-color: #00713a !important;
+            height: 80px !important;
+            line-height: 80px !important; /* Centraliza o texto verticalmente */
+            font-size: 1.6rem !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            color: white !important;
+            display: block !important;
+        }
+        
+        /* Garante que o conteúdo abaixo não fique colado na faixa */
+        .wrapper {
+            height: calc(100vh - 80px);
+        }
+    </style>
 </head>
 <body>
 
-    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v9.6</div>
+    <div class="header">RESIDENCIAIS MRV EM SÃO PAULO</div>
 
     <div class="wrapper">
         <aside class="sidebar-esq" id="lista-imoveis">
@@ -34,6 +52,7 @@
     <script src="mrv-engine.js"></script>
     
     <script>
+        // Função atualizada para garantir a troca de mapa ao clicar no botão
         function gerarListaLateral() {
             const list = document.getElementById('lista-imoveis');
             if (!list) return;
@@ -53,8 +72,12 @@
                     btn.innerHTML = `<strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
                 }
                 
+                // O ONCLICK agora passa o id_path e cidade para disparar a lógica do engine
                 btn.onclick = () => {
-                    comandoSelecao(item.id_path, item.cidade, item);
+                    if (typeof comandoSelecao === 'function') {
+                        // Passamos o id_path e a cidade (que é o ID da região no mapa)
+                        comandoSelecao(item.id_path, item.cidade, item);
+                    }
                 };
                 list.appendChild(btn);
             });
