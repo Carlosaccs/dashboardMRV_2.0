@@ -4,23 +4,16 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard MRV SP - v9.3</title>
+    <title>Dashboard MRV SP - v9.4</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Ajustes finos de transição para os botões */
-        .btRes, .separador-complexo-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .notranslate { translate: no !important; }
-    </style>
 </head>
 <body>
 
-    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v9.3</div>
+    <div class="header">DASHBOARD MRV SP - GESTÃO DE ESTOQUE v9.4</div>
 
     <div class="wrapper">
         <aside class="sidebar-esq" id="lista-imoveis">
-            <div style="padding:20px; color:#666; font-size: 0.8rem;">Carregando imóveis...</div>
+            <div style="padding:20px; color:#666; font-size: 0.8rem;">Carregando...</div>
         </aside>
         
         <main class="conteudo-centro">
@@ -32,7 +25,7 @@
         <aside class="sidebar-dir" id="ficha-tecnica">
             <div style="text-align:center; color:#ccc; margin-top:100px;">
                 <p style="font-size: 30px;">📍</p>
-                <p>Selecione uma região no mapa ou na lista ao lado</p>
+                <p>Selecione um empreendimento</p>
             </div>
         </aside>
     </div>
@@ -41,40 +34,32 @@
     <script src="mrv-engine.js"></script>
     
     <script>
-        // Função que constrói a lista da esquerda com os IDs corretos para o destaque
         function gerarListaLateral() {
             const list = document.getElementById('lista-imoveis');
             if (!list) return;
             list.innerHTML = ""; 
             
             DADOS_PLANILHA.forEach(item => {
-                if (!item.nome || item.nome.length > 45) return;
-
+                if (!item.nome) return;
                 const btn = document.createElement('button');
-                
-                // CRUCIAL: Criar o ID que o mrv-engine.js vai usar para colocar o fundo laranja
-                // Remove caracteres especiais e espaços para o ID ser válido
                 const idLimpo = item.nome.replace(/[^a-zA-Z0-9]/g, '-');
                 btn.id = `btn-esq-${idLimpo}`;
                 
-                // Define a classe base (Complexo ou Residencial)
-                btn.className = item.tipo === 'N' ? "separador-complexo-btn notranslate" : "btRes notranslate";
+                if (item.tipo === 'N') {
+                    btn.className = "separador-complexo-btn notranslate";
+                    btn.innerHTML = `<strong>${item.nome.toUpperCase()}</strong>`;
+                } else {
+                    btn.className = "btRes notranslate";
+                    btn.innerHTML = `<strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
+                }
                 
-                // Conteúdo do botão
-                btn.innerHTML = `<strong class="notranslate">${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
-                
-                // Ação de clique: seleciona no mapa e na vitrine
                 btn.onclick = () => comandoSelecao(item.id_path, item.cidade, item);
-                
                 list.appendChild(btn);
             });
         }
 
-        // Inicia o App assim que a página carrega
         window.onload = function() {
-            if (typeof iniciarApp === 'function') {
-                iniciarApp();
-            }
+            if (typeof iniciarApp === 'function') iniciarApp();
         };
     </script>
 </body>
