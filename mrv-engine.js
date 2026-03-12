@@ -11,11 +11,21 @@ const COL = {
 };
 
 async function iniciarApp() {
-    // AJUSTE: Atualiza o título e a faixa verde conforme solicitado
+    // 1. Ajusta o Título e a Faixa Verde
     const topo = document.querySelector('.topo-dashboard');
     if (topo) {
         topo.innerText = "RESIDENCIAIS MRV EM SÃO PAULO";
-        topo.style.padding = "20px 0"; // Deixa a faixa mais larga
+        topo.style.padding = "20px 0"; 
+        topo.style.fontSize = "1.4rem";
+    }
+
+    // 2. Aumenta o Mapa em 15% via CSS forçado
+    const caixaA = document.getElementById('caixa-a');
+    if (caixaA) {
+        caixaA.style.overflow = "hidden";
+        caixaA.style.display = "flex";
+        caixaA.style.alignItems = "center";
+        caixaA.style.justifyContent = "center";
     }
 
     try {
@@ -32,6 +42,7 @@ async function carregarPlanilha() {
         const response = await fetch(URL_CSV);
         let texto = await response.text();
         
+        // CORREÇÃO DA ÚLTIMA LINHA: Garante que o arquivo termine com quebra de linha
         if (!texto.endsWith('\n')) texto += '\n';
 
         const linhas = [];
@@ -88,7 +99,10 @@ async function carregarPlanilha() {
 function renderizarNoContainer(id, dados, interativo) {
     const container = document.getElementById(id);
     if (!container || !dados) return;
-    if (!interativo) { container.style.cursor = "pointer"; container.onclick = trocarMapas; } else { container.onclick = null; }
+    
+    if (!interativo) { container.style.cursor = "pointer"; container.onclick = trocarMapas; } 
+    else { container.onclick = null; }
+
     const pathsHtml = dados.paths.map(p => {
         const idPathNormalizado = p.id.toLowerCase().replace(/\s/g, '');
         const temMRV = DADOS_PLANILHA.some(d => d.id_path === idPathNormalizado);
@@ -99,12 +113,10 @@ function renderizarNoContainer(id, dados, interativo) {
         return `<path id="${id}-${p.id}" name="${p.name}" d="${p.d}" class="${classe}" ${clique} ${hover}></path>`;
     }).join('');
 
-    // AJUSTE: Transform scale(1.15) aplicado diretamente no grupo do SVG para aumentar o mapa
+    // AUMENTO DE 15%: Aplicado via style="transform: scale(1.15)" no SVG
     container.innerHTML = `
-        <svg viewBox="${dados.viewBox}" preserveAspectRatio="xMidYMid meet">
-            <g transform="scale(1.15) ${dados.transform || ''}" style="transform-origin: center;">
-                ${pathsHtml}
-            </g>
+        <svg viewBox="${dados.viewBox}" preserveAspectRatio="xMidYMid meet" style="width:100%; height:100%; transform: scale(1.15); transform-origin: center;">
+            <g transform="${dados.transform || ''}">${pathsHtml}</g>
         </svg>`;
 }
 
