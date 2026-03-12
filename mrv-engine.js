@@ -1,91 +1,97 @@
-function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
-    const painel = document.getElementById('ficha-tecnica');
-    if(!painel) return;
-    
-    // Filtra para mostrar os outros empreendimentos da mesma região no topo
-    const listaSuperior = listaDaCidade.filter(i => i.nome !== selecionado.nome);
-    const urlMaps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selecionado.endereco)}`;
-    
-    // Cabeçalho da Vitrine
-    let html = `<div class="vitrine-topo">MRV EM ${nomeRegiao.toUpperCase()}</div>`;
-    
-    // Botões de navegação rápida (outros da mesma região)
-    if (listaSuperior.length > 0) {
-        html += `<div style="margin-bottom:10px;">${listaSuperior.map(item => {
-            const classe = item.tipo === 'N' ? 'separador-complexo-btn' : 'btRes';
-            return `<button class="${classe}" onclick="navegarVitrine('${item.nome}', '${nomeRegiao}')">
-                        <strong>${item.nome}</strong> ${item.tipo === 'R' ? obterHtmlEstoque(item.estoque, item.tipo) : ''}
-                    </button>`;
-        }).join('')}</div>`;
-    }
+// ... (mantenha as variáveis e o COL no topo como estão)
 
-    // Linha divisória para limpar o olhar
-    html += `<hr class="divisor-vitrine">`;
-
-    if (selecionado.tipo === 'N') {
-        // --- CENÁRIO COMPLEXO ---
-        html += `<div class="titulo-complexo-vitrine">${selecionado.nomeFull}</div>`;
-        html += `<div class="endereco-vitrine">
-                    <span>📍 ${selecionado.endereco}</span>
-                    <a href="${urlMaps}" target="_blank" class="btn-maps">MAPS</a>
-                 </div>`;
-        const desc = (selecionado.descLonga || "").split('\n').map(p => `<p>${p.trim()}</p>`).join('');
-        html += `<div class="box-argumento-full"><label>Sobre o Complexo</label>${desc}</div>`;
-    
-    } else {
-        // --- CENÁRIO RESIDENCIAL ---
-        // Título escuro para o nome do Residencial
-        html += `<div class="titulo-residencial-vitrine">${selecionado.nome}</div>`;
-        
-        // Tabela de Preços logo abaixo do título
-        html += `
-        <table class="tabela-mrv">
-            <thead>
-                <tr>
-                    <th>PLANTA</th>
-                    <th class="laranja">PREÇO A PARTIR</th>
-                    <th>ENTREGA</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>${selecionado.p_de}</td>
-                    <td class="destaque">${selecionado.preco}</td>
-                    <td>${selecionado.entrega}</td>
-                </tr>
-            </tbody>
-        </table>`;
-
-        // Endereço e Botão Maps
-        html += `<div class="endereco-vitrine">
-                    <span>📍 ${selecionado.endereco}</span>
-                    <a href="${urlMaps}" target="_blank" class="btn-maps">MAPS</a>
-                 </div>`;
-
-        // Barra de Progresso da Obra
-        html += `
-        <div class="info-box">
-            <label>Status da Obra</label>
-            <div style="flex:1; margin: 0 10px; background:#eee; height:8px; border-radius:4px; overflow:hidden;">
-                <div style="width:${selecionado.obra}%; background:var(--mrv-verde); height:100%;"></div>
-            </div>
-            <span>${selecionado.obra}%</span>
-        </div>`;
-
-        // Dica do Corretor (se houver)
-        if (selecionado.dica) {
-            html += `<div class="box-argumento box-dica"><label>Dica do Corretor</label><p>${selecionado.dica}</p></div>`;
-        }
-
-        // Botão de Book do Cliente
-        if (selecionado.book && selecionado.book.length > 5) {
-            html += `
-            <a href="${selecionado.book}" target="_blank" class="btRes" 
-               style="background:var(--mrv-verde); color:white; justify-content:center; font-weight:bold; margin-top:12px; border:none; width:100% !important; height:38px !important;">
-               📄 ABRIR BOOK CLIENTE
-            </a>`;
-        }
-    }
-    
-    painel.innerHTML = html;
+async function iniciarApp() {
+    // REMOVEMOS os estilos daqui para você controlar pelo HTML/CSS
+    try {
+        if (typeof MAPA_GSP !== 'undefined') desenharMapas();
+        await carregarPlanilha();
+    } catch (err) { console.error("Erro na inicialização:", err); }
 }
+
+async function carregarPlanilha() {
+    const SHEET_ID = "15V194P2JPGCCPpCTKJsib8sJuCZPgtbNb-rtgNaLS7E";
+    const URL_CSV = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&v=${new Date().getTime()}`;
+    
+    try {
+        const response = await fetch(URL_CSV);
+        let texto = await response.text();
+        if (!texto.endsWith('\n')) texto += '\n'; // Garante o Grand Prix
+
+        const linhas = [];
+        let linhaAtual = "", dentroDeAspas = false;
+        for (let i = 0; i < texto.length; i++) {
+            const char = texto[i];
+            if (char === '"') dentroDeAspas = !dentroDeAspas;
+            if ((char === '\n' || char === '\r') && !dentroDeAspas) {
+                if (linhaAtual.trim()) linhas.push(linhaAtual);
+                linhaAtual = "";
+            } else { linhaAtual += char; }
+        }
+
+        DADOS_PLANILHA = linhas.slice(1).map(linha => {
+            const colunas = [];
+            let campo = "", aspas = false;
+            for (let i = 0; i < linha.length; i++) {
+                const char = linha[i];
+                if (char === '"') aspas = !aspas;
+                else if (char === ',' && !aspas) { colunas.push(campo.trim()); campo = ""; }
+                else { campo += char; }
+            }
+            colunas.push(campo.trim());
+            const catLimpa = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase() : "";
+            return {
+                id_path: colunas[COL.ID] ? colunas[COL.ID].toLowerCase().replace(/\s/g, '') : "",
+                tipo: catLimpa.includes('COMPLEXO') ? 'N' : 'R',
+                ordem: parseInt(colunas[COL.ORDEM]) || 999,
+                nome: colunas[COL.NOME] || "",
+                cidade: colunas[COL.ID] || "",
+                estoque: colunas[COL.ESTOQUE] || "",
+                endereco: colunas[COL.END] || "",
+                entrega: colunas[COL.ENTREGA] || "",
+                preco: colunas[COL.P_DE] || "Consulte",
+                p_de: colunas[COL.P_DE] || "-",
+                obra: colunas[COL.OBRA] || "0",
+                documentos: colunas[COL.DOCUMENTOS] || "",
+                dica: colunas[COL.DICA] || "",
+                descLonga: colunas[COL.DESC_LONGA] || "",
+                book: colunas[COL.BK_CLI] || ""
+            };
+        }).filter(i => i.nome && i.nome.length > 2);
+
+        DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
+        gerarListaLateral(); 
+        desenharMapas();
+    } catch (e) { console.error("Erro CSV:", e); }
+}
+
+function comandoSelecao(idPath, nomePath, fonte) {
+    const idBusca = idPath.toLowerCase().replace(/\s/g, '');
+    
+    // ESTA PARTE É O QUE RESOLVE O PROBLEMA DOS BTRES:
+    const estaNaGSP = MAPA_GSP.paths.some(p => p.id.toLowerCase().replace(/\s/g, '') === idBusca);
+    const estaNoInterior = MAPA_INTERIOR.paths.some(p => p.id.toLowerCase().replace(/\s/g, '') === idBusca);
+
+    if (estaNaGSP && mapaAtivo !== 'GSP') { trocarMapas(); }
+    else if (estaNoInterior && mapaAtivo !== 'INTERIOR') { trocarMapas(); }
+
+    const imoveis = DADOS_PLANILHA.filter(d => d.id_path === idBusca);
+    if (imoveis.length > 0) {
+        const selecionado = (fonte && fonte.nome) ? fonte : imoveis[0];
+        nomeSelecionado = nomePath || selecionado.cidade;
+        
+        document.getElementById('cidade-titulo').innerText = nomeSelecionado;
+        
+        if (pathSelecionado) pathSelecionado.classList.remove('path-ativo');
+        const el = document.getElementById(`caixa-a-${idBusca}`);
+        if (el) { el.classList.add('path-ativo'); pathSelecionado = el; }
+        
+        document.querySelectorAll('.btRes, .separador-complexo-btn').forEach(btn => btn.classList.remove('ativo'));
+        const idBotao = `btn-esq-${selecionado.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
+        const btnClicado = document.getElementById(idBotao);
+        if (btnClicado) btnClicado.classList.add('ativo');
+        
+        montarVitrine(selecionado, imoveis, nomeSelecionado);
+    }
+}
+
+// ... (Restante das funções: renderizarNoContainer, montarVitrine, gerarListaLateral, etc. como na versão anterior)
