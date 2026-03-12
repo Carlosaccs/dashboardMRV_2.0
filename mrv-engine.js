@@ -35,7 +35,7 @@ async function carregarPlanilha() {
             } else { linhaAtual += char; }
         }
 
-        DADOS_PLANILHA = linhas.slice(1).map(linha => {
+        DADOS_PLANILHA = linhas.slice(1).map((linha, index) => {
             const colunas = [];
             let campo = "", aspas = false;
             for (let i = 0; i < linha.length; i++) {
@@ -46,11 +46,10 @@ async function carregarPlanilha() {
             }
             colunas.push(campo.trim());
 
-            // FILTRO REFORÇADO: Captura "COMPLEXO", "COMPLEXOS", "N" etc.
             const catRaw = colunas[COL.CATEGORIA] ? colunas[COL.CATEGORIA].toUpperCase().trim() : "";
-            const ehComplexo = (catRaw.indexOf('COMPLEXO') !== -1 || catRaw === 'N');
+            const ehComplexo = (catRaw.includes('COMPLEXO') || catRaw === 'N');
 
-            return {
+            const item = {
                 id_path: colunas[COL.ID] ? colunas[COL.ID].toLowerCase().replace(/\s/g, '') : "",
                 tipo: ehComplexo ? 'N' : 'R',
                 ordem: parseInt(colunas[COL.ORDEM]) || 999,
@@ -67,7 +66,18 @@ async function carregarPlanilha() {
                 descLonga: colunas[COL.DESC_LONGA] || "",
                 book: colunas[COL.BK_CLI] || ""
             };
-        }).filter(i => i.id_path !== "" && i.nome.length > 2);
+
+            // Diagnóstico para o Grand Prix
+            if (item.nome.toUpperCase().includes("GRAND PRIX")) {
+                console.log("Achei o Grand Prix na linha " + (index + 2), item);
+            }
+
+            return item;
+        }).filter(i => {
+            // Se o nome for "GRAND PRIX", não deixa o filtro barrar de jeito nenhum
+            if (i.nome.toUpperCase().includes("GRAND PRIX")) return true;
+            return i.id_path !== "" && i.nome.length > 2;
+        });
 
         DADOS_PLANILHA.sort((a, b) => a.ordem - b.ordem);
         if (typeof gerarListaLateral === 'function') gerarListaLateral();
@@ -152,7 +162,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
             </p>`;
 
     if (selecionado.tipo === 'N') {
-        const desc = selecionado.descLonga.split('\n').map(p => `<p style="margin-bottom:8px;">${p.trim()}</p>`).join('');
+        const desc = (selecionado.descLonga || "").split('\n').map(p => `<p style="margin-bottom:8px;">${p.trim()}</p>`).join('');
         html += `<div class="box-argumento" style="border-left-color: var(--mrv-verde); background:#f9f9f9;"><label>Sobre o Complexo</label>${desc}</div>`;
     } else {
         html += `
