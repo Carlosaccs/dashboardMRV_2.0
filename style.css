@@ -1,213 +1,40 @@
-/* VARIÁVEIS E RESET */
 :root {
     --mrv-verde: #00713a;
     --mrv-laranja: #ff8c00;
-    --vermelho-mrv: #e31010;
     --texto-escuro: #333;
-    --bg-lateral: #f8f9fa;
 }
 
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-}
+/* ... (mantenha o restante do seu CSS anterior) ... */
 
-body { 
-    display: flex; 
-    flex-direction: column; 
-    height: 100vh; 
-    overflow: hidden; 
-    background: white; 
-}
-
-/* FAIXA TOPO (Ajustada em 48px com Flexbox) */
-.header { 
-    background: var(--mrv-verde) !important; 
-    color: white !important; 
-    height: 48px !important; 
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-weight: bold; 
-    font-size: 1.3rem; 
-    text-align: center;
-    width: 100%;
-    z-index: 10;
-}
-
-.wrapper { 
-    display: flex; 
-    flex: 1; 
-    height: calc(100vh - 48px); 
-    overflow: hidden; 
-}
-
-/* BARRA LATERAL ESQUERDA (LISTA) */
-.sidebar-esq { 
-    width: 280px; 
-    border-right: 1px solid #ddd; 
-    overflow-y: auto; 
-    padding: 10px 0; 
-    background: var(--bg-lateral); 
-    flex-shrink: 0; 
-}
-
-.separador-complexo-btn, .btRes {
-    width: 92% !important;
-    margin: 4px auto !important;
-    min-height: 32px !important;
-    display: flex !important;
-    align-items: center !important;
-    padding: 6px 10px !important;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    transition: 0.2s;
-    text-align: left;
-}
-
-.separador-complexo-btn { 
-    background: #333 !important; 
-    color: white !important; 
-    justify-content: center !important; 
-    font-weight: bold; 
-    text-transform: uppercase; 
-    border: none !important; 
-}
-
-.btRes { 
-    background: #fff; 
-    border-left: 4px solid var(--mrv-verde) !important; 
-    justify-content: space-between; 
-    color: var(--texto-escuro); 
-}
-
-.btRes:hover { background-color: #eee !important; }
-.btRes.ativo { 
-    background-color: var(--mrv-laranja) !important; 
-    color: white !important; 
-    border: 1px solid var(--mrv-laranja) !important; 
-}
-.btRes.ativo strong { color: white !important; }
-
-.badge-estoque { font-size: 0.65rem; font-weight: bold; white-space: nowrap; }
-
-/* CONTEÚDO CENTRAL (MAPAS) */
-.conteudo-centro { 
-    flex: 1; 
-    display: flex; 
-    flex-direction: column; 
-    background: #fff; 
-    overflow: hidden; 
-}
-
-#cidade-titulo { 
-    background: #eee; 
-    padding: 4px; 
-    text-align: center; 
-    font-weight: bold; 
-    font-size: 0.75rem; 
-    color: #555; 
-    height: 30px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-}
-
-#caixa-a { 
-    flex: 1.3; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 15px; 
-    overflow: hidden; 
-    background: transparent !important; 
-    border: none !important; 
-}
-
-#caixa-b { 
-    flex: 0.45; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 10px; 
-    background: white; 
-    overflow: hidden; 
-    border-top: 1px solid #eee;
-}
-
-/* ESTILIZAÇÃO DOS MAPAS (SVG) */
-svg { width: 100%; height: 100%; display: block; }
-path { 
-    fill: #ccc; /* Cor padrão para áreas sem MRV */
-    stroke: #ffffff; 
-    stroke-width: 0.8; 
-    transition: 0.2s; 
-}
-path.commrv { fill: var(--mrv-verde) !important; cursor: pointer; }
-path.commrv:hover, path.path-ativo { 
-    fill: var(--mrv-laranja) !important; 
-    stroke: #000 !important; 
-    stroke-width: 1px !important; 
-}
-
-/* VITRINE DIREITA (FICHA TÉCNICA) */
-.sidebar-dir { 
-    width: 480px; 
-    border-left: 1px solid #ddd; 
-    overflow-y: auto; 
-    padding: 15px; 
-    flex-shrink: 0; 
-    background: #fff; 
-}
-
-.vitrine-topo { 
-    background: var(--mrv-verde); 
-    color: white; 
-    padding: 10px; 
-    text-align: center; 
-    font-weight: bold; 
-    border-radius: 4px; 
-    margin-bottom: 12px; 
-    font-size: 0.8rem; 
-    text-transform: uppercase; 
-}
-
+/* NOVA ESTRUTURA DA VITRINE */
 .divisor-vitrine {
     border: 0;
     border-top: 1px solid #eee;
-    margin: 15px 0;
+    margin: 12px 0;
+    width: 100%;
 }
 
-/* TÍTULOS ESCUROS NA VITRINE */
-.titulo-complexo-vitrine, .titulo-residencial-vitrine {
+.titulo-complexo-vitrine {
+    background: #333 !important;
     color: white !important;
-    padding: 12px;
+    padding: 10px;
     font-weight: bold;
     text-align: center;
-    font-size: 0.9rem;
-    border-radius: 4px 4px 0 0;
+    font-size: 0.85rem;
+    border-radius: 4px 4px 0 0; /* Arredonda só em cima para colar na caixa */
     text-transform: uppercase;
     width: 100%;
 }
-.titulo-complexo-vitrine { background: #333 !important; }
-.titulo-residencial-vitrine { background: #444 !important; }
-
-/* CAIXAS DE CONTEÚDO ABAIXO DOS TÍTULOS */
-.box-argumento-full, .tabela-mrv {
-    width: 100%;
-    margin-top: 0 !important;
-}
 
 .box-argumento-full {
-    padding: 15px;
+    margin-top: 0; 
+    padding: 12px;
     background: #f9f9f9;
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4px 4px; /* Arredonda só embaixo */
     border-left: 4px solid var(--mrv-verde);
+    border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
+    width: 100%;
 }
 
 .box-argumento-full label {
@@ -220,23 +47,8 @@ path.commrv:hover, path.path-ativo {
 }
 
 .box-argumento-full p {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: #444;
-    line-height: 1.5;
+    line-height: 1.4;
+    margin-bottom: 10px;
 }
-
-/* TABELA DE PREÇOS */
-.tabela-mrv { 
-    border-collapse: collapse; 
-    font-size: 0.75rem; 
-    border: 1px solid #ddd; 
-}
-.tabela-mrv th { 
-    background: #f2f2f2; 
-    padding: 8px; 
-    font-weight: 800; 
-    border: 1px solid #ddd; 
-}
-.tabela-mrv th.laranja { background: var(--mrv-laranja); color: white; }
-.tabela-mrv td { padding: 8px; border: 1px solid #ddd; text-align: center; background: #fff; }
-.tabela-
