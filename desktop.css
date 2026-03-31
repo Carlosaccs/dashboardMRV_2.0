@@ -3,7 +3,7 @@
    ========================================================================== */
 :root {
     --mrv-verde: #00713a;
-    --mrv-laranja: #ff8c00;
+    --mrv-laranja: #f37021; /* Padronizado com o hover do mapa */
     --mrv-preto: #333;
     --vermelho-mrv: #e31010;
     --cinza-claro: #f4f4f4;
@@ -11,7 +11,7 @@
     --cinza-mapa: #777;
 
     /* Cores das Zonas (Padrão MRV SP) */
-    --mrv-zo: #f37021; 
+    --mrv-zo: var(--mrv-laranja); /* ZO agora usa o mesmo laranja padrão */
     --mrv-zl: #002060; 
     --mrv-zn: #ffc000; 
     --mrv-zs: #ec008c; 
@@ -90,49 +90,53 @@ body {
 .btRes, .separador-complexo-btn {
     width: 92% !important; 
     margin: 4px auto !important; 
-    min-height: 27px;
     display: flex !important; 
     align-items: center !important; 
-    padding: 6px 10px !important;
+    padding: 8px 12px !important; /* Aumentei o padding para dar espaço */
     border-radius: 4px; 
     font-size: 0.72rem; 
     cursor: pointer; 
     border: 1px solid #ddd; 
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.1s ease;
+    box-sizing: border-box;
+    justify-content: space-between; /* Garante nome na esquerda e zona na direita */
 }
 
+/* HOVER: Contorno verde sem negrito */
+.btRes:hover, .separador-complexo-btn:hover { 
+    border: 1px solid var(--mrv-verde) !important;
+    background-color: #f0f0f0 !important;
+}
+
+/* CLIQUE (ATIVO) */
+.btRes.ativo, .separador-complexo-btn.ativo { 
+    background-color: #ececec !important; 
+    color: #000 !important; 
+    border: 1px solid var(--mrv-verde) !important; 
+    border-right: 5px solid var(--mrv-verde) !important; 
+    font-weight: bold;
+}
+
+/* --- RESIDENCIAIS (btRes) --- */
+.btRes.btn-zo { background-color: rgba(243, 112, 33, 0.1) !important; border-right: 5px solid var(--mrv-zo) !important; }
+.btRes.btn-zl { background-color: rgba(0, 32, 96, 0.1) !important; border-right: 5px solid var(--mrv-zl) !important; }
+.btRes.btn-zn { background-color: rgba(255, 192, 0, 0.1) !important; border-right: 5px solid var(--mrv-zn) !important; }
+.btRes.btn-zs { background-color: rgba(236, 0, 140, 0.1) !important; border-right: 5px solid var(--mrv-zs) !important; }
+
+/* --- COMPLEXOS (Mais vivos/claros que a versão anterior) --- */
 .separador-complexo-btn { 
-    background: #333 !important; 
     color: white !important; 
-    justify-content: center !important; 
     font-weight: bold; 
     text-transform: uppercase; 
-    border: none !important; 
+    border: none !important;
 }
 
-.btRes { 
-    background: #fff; 
-    border-left: 4px solid var(--mrv-verde) !important; 
-    justify-content: space-between; 
-    color: #333; 
-}
-
-.btRes.btn-zo { border-left: 4px solid var(--mrv-zo) !important; }
-.btRes.btn-zl { border-left: 4px solid var(--mrv-zl) !important; }
-.btRes.btn-zn { border-left: 4px solid var(--mrv-zn) !important; }
-.btRes.btn-zs { border-left: 4px solid var(--mrv-zs) !important; }
-
-.btRes:hover { 
-    background-color: #f0f0f0 !important; 
-    border: 1px solid var(--mrv-verde) !important; 
-}
-
-.btRes.ativo { 
-    background-color: var(--mrv-laranja) !important; 
-    color: white !important; 
-    border: 1px solid var(--mrv-laranja) !important; 
-}
+/* Cores de Complexo ajustadas */
+.separador-complexo-btn.btn-zo { background-color: #ff9d42 !important; } /* Laranja mais claro e vivo que o path */
+.separador-complexo-btn.btn-zl { background-color: #003399 !important; } 
+.separador-complexo-btn.btn-zn { background-color: #ffd700 !important; color: #333 !important; } /* Amarelo com texto escuro para ler melhor */
+.separador-complexo-btn.btn-zs { background-color: #ff33aa !important; }
 
 /* ==========================================================================
    5. CENTRO (MAPAS E TÍTULOS)
