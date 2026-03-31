@@ -46,7 +46,7 @@ body {
 .wrapper { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
 
 /* ==========================================================================
-   4. SIDEBAR ESQUERDA (LISTA)
+   4. SIDEBAR ESQUERDA (LISTA - DESTAQUE CINZA)
    ========================================================================== */
 .sidebar-esq { 
     width: 280px; border-right: 1px solid #ddd; overflow-y: auto; 
@@ -62,56 +62,42 @@ body {
 
 /* --- ESTILO DOS PRÉDIOS (Residenciais) --- */
 .btRes { 
-    background: #fff; border: 1px solid #ddd; border-left: none !important;
-    border-right: 6px solid var(--mrv-verde) !important; justify-content: space-between; color: #333; 
+    background: #fff; 
+    border: 1px solid #ddd; 
+    border-left: none !important;
+    border-right: 6px solid var(--mrv-verde) !important; 
+    justify-content: space-between; 
+    color: #333; 
 }
 
-/* Cores das Tarjas DIREITAS */
+/* Cores das Tarjas DIREITAS (Mantidas) */
 .btRes.btn-zo { border-right-color: var(--mrv-zo) !important; }
 .btRes.btn-zl { border-right-color: var(--mrv-zl) !important; }
 .btRes.btn-zn { border-right-color: var(--mrv-zn) !important; }
 .btRes.btn-zs { border-right-color: var(--mrv-zs) !important; }
 .btRes.btn-verde { border-right-color: var(--mrv-verde) !important; }
 
-/* HOVER E ATIVO COM O LARANJA DO MAPA */
-.btRes:hover { background-color: #fff3e0 !important; border-color: var(--mrv-laranja-mestre) !important; }
+/* HOVER SUTIL */
+.btRes:hover { background-color: #f0f0f0 !important; }
 
+/* --- NOVO DESTAQUE ATIVO (CINZA + BORDA PRETA) --- */
 .btRes.ativo { 
-    background-color: var(--mrv-laranja-mestre) !important; 
-    color: white !important; 
-    border: 1px solid var(--mrv-laranja-mestre) !important; 
+    background-color: #e0e0e0 !important; /* Cinza claro */
+    color: #000 !important;               /* Texto preto para contraste */
+    border: 1.5px solid #333 !important;   /* Borda preta fina */
+    font-weight: bold;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1); /* Sombra interna leve */
 }
-
-/* --- ESTILO DOS COMPLEXOS (Fundo Colorido) --- */
-.separador-complexo-btn { 
-    color: white !important; justify-content: center !important; 
-    font-weight: bold; text-transform: uppercase; border: none !important; text-align: center;
-}
-.separador-complexo-btn.btn-zo { background-color: var(--mrv-zo) !important; }
-.separador-complexo-btn.btn-zl { background-color: var(--mrv-zl) !important; }
-.separador-complexo-btn.btn-zn { background-color: var(--mrv-zn) !important; }
-.separador-complexo-btn.btn-zs { background-color: var(--mrv-zs) !important; }
-.separador-complexo-btn.btn-verde, .separador-complexo-btn { background-color: var(--mrv-verde) !important; }
 
 /* ==========================================================================
-   5. CENTRO E MAPAS (PADRONIZADO)
+   5. CENTRO E MAPAS (O MAPA CONTINUA LARANJA)
    ========================================================================== */
-.conteudo-centro { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
-#cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.85rem; color: #555; height: 30px; display: flex; align-items: center; justify-content: center; text-transform: uppercase; }
-#caixa-a { flex: 2; display: flex; align-items: center; justify-content: center; padding: 15px; overflow: hidden; }
-#caixa-b { flex: 0.4; display: flex; align-items: center; justify-content: center; padding: 5px; border-top: 1px solid #eee; cursor: pointer; background: #fff; min-height: 120px; max-height: 160px; }
-
-svg { width: 100%; height: 100%; }
-path { fill: var(--cinza-mapa); stroke: #fff; stroke-width: 0.8; transition: fill 0.2s, stroke-width 0.2s; }
-
-/* MAPA USANDO O LARANJA MESTRE */
-path:hover { fill: #999 !important; cursor: pointer; }
-path.commrv { fill: var(--mrv-verde) !important; }
+/* ... (mantenha o código do mapa igual para o destaque laranja continuar lá) ... */
 path.commrv:hover, path.ativo { 
     fill: var(--mrv-laranja-mestre) !important; 
-    stroke: #000 !important; stroke-width: 1.5px !important; 
+    stroke: #000 !important; 
+    stroke-width: 1.5px !important; 
 }
-
 /* ==========================================================================
    6. SIDEBAR DIREITA (VITRINE)
    ========================================================================== */
