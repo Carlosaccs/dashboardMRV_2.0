@@ -6,15 +6,14 @@ let pathAtivo = null;
 let imovelAtivo = null;  
 let mapaAtivo = 'GSP'; 
 
-// Mapeamento atualizado: Nova coluna inserida em D (3), deslocando as demais
 const COL = {
     ID: 0, CATEGORIA: 1, ORDEM: 2, 
-    NOVA_COLUNA: 3, // Coluna inserida na posição D
+    ZONA: 3, // Coluna D da Planilha
     NOME: 4, NOME_FULL: 5,  
     ESTOQUE: 6, END: 7, TIPOLOGIAS: 8, ENTREGA: 9, 
     P_DE: 10, P_ATE: 11, OBRA: 12, LIMITADOR: 13, 
     REGIAO: 14, CASA_PAULISTA: 15, CAMPANHA: 16, 
-    DESC_LONGA: 18, OBSERVACOES: 19, // Invertidos/Deslocados conforme estrutura original
+    DESC_LONGA: 18, OBSERVACOES: 19,
     LOCALIZACAO: 20, MOBILIDADE: 21, CULTURA_LAZER: 22,    
     COMERCIO: 23, SAUDE_EDUCACAO: 24,
     BOOK_CLIENTE: 25, BOOK_CORRETOR: 26,
@@ -22,6 +21,7 @@ const COL = {
     LINKS_IMPLANT: 29, LINKS_DIVERSOS: 30,
     ESTANDE: 31 
 };
+
 
 /* ==========================================================================
    BLOCO 02: INICIALIZAÇÃO E UTILITÁRIOS
@@ -89,6 +89,7 @@ async function carregarPlanilha() {
                 id_path: idPath,
                 tipo: cat.includes('COMPLEXO') ? 'N' : 'R',
                 ordem: ordem,
+                zona: colunas[COL.ZONA] || "", // Capturando a coluna D
                 nome: nomeImovel,
                 nomeFull: colunas[COL.NOME_FULL] || nomeImovel,
                 estoque: colunas[COL.ESTOQUE],
@@ -127,21 +128,18 @@ async function carregarPlanilha() {
 /* ==========================================================================
    BLOCO 04: LÓGICA DO MAPA E SELEÇÃO
    ========================================================================== */
-function obterHtmlEstoque(valor, tipo) {
-    if (tipo === 'N') return "";
-    const clean = valor ? valor.toString().toUpperCase().trim() : "";
-    if (clean === "VENDIDO" || clean === "0") return `<span style="color:#999; text-decoration:line-through; font-size:9px;">VENDIDO</span>`;
-    const num = parseInt(clean);
-    if (!isNaN(num)) return `<span style="color:${num < 6 ? '#e31010' : '#666'}; font-size:9px; font-weight:bold;">RESTAM ${num} UN.</span>`;
-    return `<span style="color:#666; font-size:9px;">${clean || "CONSULTAR"}</span>`;
+function obterHtmlZona(zona, tipo) {
+    if (tipo === 'N' || !zona || zona === "---") return "";
+    return `<span style="font-size:10px; font-weight:bold; color:#666;">${zona.toUpperCase()}</span>`;
 }
 
-function detectarClasseZona(nome) {
-    const n = nome.toUpperCase();
-    if (n.startsWith("ZO ")) return "btn-zo";
-    if (n.startsWith("ZL ")) return "btn-zl";
-    if (n.startsWith("ZN ")) return "btn-zn";
-    if (n.startsWith("ZS ")) return "btn-zs";
+function detectarClasseZona(zona) {
+    if (!zona) return "";
+    const z = zona.toUpperCase().trim();
+    if (z.includes("ZO")) return "btn-zo";
+    if (z.includes("ZL")) return "btn-zl";
+    if (z.includes("ZN")) return "btn-zn";
+    if (z.includes("ZS")) return "btn-zs";
     return ""; 
 }
 
@@ -213,7 +211,6 @@ function renderizarNoContainer(id, dados, interativo) {
         return `<path id="${id}-${idNorm}" d="${p.d}" class="${(temMRV || isGSP) && interativo ? 'commrv '+ativo : ''}" ${eventos}></path>`;
     }).join('');
 
-    // AJUSTE DE ESCALA: Se for o mapa principal (interativo), aumenta 25%. Se for o de baixo, diminui 25%.
     const escala = interativo 
         ? 'transform: scale(1.25); transform-origin: center;' 
         : 'transform: scale(0.75); transform-origin: center;';
@@ -226,23 +223,6 @@ function renderizarNoContainer(id, dados, interativo) {
         </svg>`;
 }
 
-function desenharMapas() {
-    renderizarNoContainer('caixa-a', (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR, true);
-    renderizarNoContainer('caixa-b', (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP, false);
-    document.getElementById('caixa-b').onclick = () => trocarMapas(true);
-}
-
-function trocarMapas(completo) { 
-    mapaAtivo = (mapaAtivo === 'GSP') ? 'INTERIOR' : 'GSP'; 
-    if (completo) { 
-        pathAtivo = null; 
-        imovelAtivo = null; 
-        document.getElementById('ficha-tecnica').innerHTML = `<div style="text-align:center; color:#ccc; margin-top:80px;"><p style="font-size:30px;">📍</p><p>Clique no mapa ou na lista</p></div>`;
-        document.getElementById('cidade-titulo').innerText = "SELECIONE UMA REGIÃO NO MAPA";
-    }
-    desenharMapas(); 
-    gerarListaLateral(); 
-}
 function desenharMapas() {
     renderizarNoContainer('caixa-a', (mapaAtivo === 'GSP') ? MAPA_GSP : MAPA_INTERIOR, true);
     renderizarNoContainer('caixa-b', (mapaAtivo === 'GSP') ? MAPA_INTERIOR : MAPA_GSP, false);
@@ -266,10 +246,10 @@ function gerarListaLateral() {
     const container = document.getElementById('lista-imoveis');
     container.innerHTML = DADOS_PLANILHA.map(item => {
         const ativo = item.nome === imovelAtivo ? 'ativo' : '';
-        const classeZona = detectarClasseZona(item.nome); 
+        const classeZona = detectarClasseZona(item.zona); 
         
         return `<div class="${item.tipo === 'N' ? 'separador-complexo-btn' : 'btRes'} ${ativo} ${classeZona}" onclick="navegarVitrine('${item.nome}')">
-                    <strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}
+                    <strong>${item.nome}</strong> ${obterHtmlZona(item.zona, item.tipo)}
                 </div>`;
     }).join('');
 }
@@ -318,14 +298,16 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     
     if(outros.length > 0) {
         html += `<div style="margin-bottom:6px;">${outros.map(i => {
-            const classeZ = detectarClasseZona(i.nome);
+            const classeZ = detectarClasseZona(i.zona);
             return `<button class="${i.tipo === 'N' ? 'separador-complexo-btn' : 'btRes'} ${classeZ}" style="width:100%;" onclick="navegarVitrine('${i.nome}')">
-                <strong>${i.nome}</strong> ${obterHtmlEstoque(i.estoque, i.tipo)}
+                <strong>${i.nome}</strong> ${obterHtmlZona(i.zona, i.tipo)}
             </button>`}).join('')}</div><hr style="border:0; border-top:1px solid #eee; margin:6px 0;">`;
     }
 
     if (selecionado.tipo === 'R') {
-        html += `<div class="titulo-vitrine-faixa faixa-laranja">RES. ${selecionado.nome.toUpperCase()} — ${selecionado.regiao}</div>`;
+        // TÍTULO DO RESIDENCIAL (LARANJA PADRONIZADO)
+        html += `<div class="titulo-vitrine-faixa" style="background-color: var(--mrv-laranja); color: white; padding: 6px; font-weight: bold; text-align: center; margin-bottom: 5px; border-radius: 4px; font-size: 0.75rem;">RES. ${selecionado.nome.toUpperCase()} — ${selecionado.regiao}</div>`;
+        
         html += `
         <div style="padding: 2px 0 5px 0;">
             <div style="font-size:0.65rem; color:#444; display:flex; justify-content:space-between; align-items:center;">
@@ -345,27 +327,26 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
         const linhaInfo = (l1, v1, l2, v2, borda) => `
             <div style="display: flex; width: 100%; ${borda ? 'border-bottom: 1px solid #ddd;' : ''}">
                 <div style="flex: 1; padding: 4px 8px; border-right: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-size: 0.55rem; font-weight: bold; color: #008d36; text-transform: uppercase;">${l1}</label>
+                    <label style="font-size: 0.55rem; font-weight: bold; color: var(--mrv-verde); text-transform: uppercase;">${l1}</label>
                     <strong style="font-size: 0.65rem; color: #333;">${v1}</strong>
                 </div>
                 <div style="flex: 1; padding: 4px 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-size: 0.55rem; font-weight: bold; color: #008d36; text-transform: uppercase;">${l2}</label>
+                    <label style="font-size: 0.55rem; font-weight: bold; color: var(--mrv-verde); text-transform: uppercase;">${l2}</label>
                     <strong style="font-size: 0.65rem; color: #333;">${v2}</strong>
                 </div>
             </div>`;
 
-        // LÓGICA DE COR DO ESTOQUE (IGUAL AOS BOTÕES)
         const estoqueRaw = selecionado.estoque ? selecionado.estoque.toString().toUpperCase().trim() : "";
         let corEstoque = "#333";
         if (estoqueRaw === "VENDIDO" || estoqueRaw === "0") {
             corEstoque = "#999";
         } else {
             const nEst = parseInt(estoqueRaw);
-            if (!isNaN(nEst) && nEst < 6) corEstoque = "#e31010";
+            if (!isNaN(nEst) && nEst < 6) corEstoque = "var(--vermelho-mrv)";
         }
         const valorEstoqueColorido = `<span style="color: ${corEstoque}">${selecionado.estoque || "---"} UN.</span>`;
 
-        html += linhaInfo('Entrega', selecionado.entrega, 'Obra', selecionado.obra + '%', true);
+        html += linhaInfo('Entrega', selecionado.entrega, 'Obra', (selecionado.obra || 0) + '%', true);
         html += linhaInfo('Plantas', selecionado.p_de + ' - ' + selecionado.p_ate, 'Estoque', valorEstoqueColorido, true);
         html += linhaInfo('Limitador', selecionado.limitador, 'C. Paulista', selecionado.casa_paulista, false);
         html += `</div>`;
@@ -379,7 +360,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
                 <div class="tabela-precos-container">
                     <div class="tabela-header">
                         ${titulos.map((t, idx) => {
-                            const estiloCabecalho = idx === 1 ? 'background-color:#ff8c00; color:white; font-weight:bold;' : '';
+                            const estiloCabecalho = idx === 1 ? 'background-color: var(--mrv-laranja); color:white; font-weight:bold;' : '';
                             return `<div class="col-tabela" style="${estiloCabecalho}">${t}</div>`;
                         }).join('')}
                     </div>
@@ -389,7 +370,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
                             if(cols.length <= 1) return "";
                             return `<div class="tabela-row">
                                 ${cols.map((v, idx) => {
-                                    const estiloCelula = idx === 1 ? 'background-color:#ff8c00; color:white; font-weight:bold;' : '';
+                                    const estiloCelula = idx === 1 ? 'background-color: var(--mrv-laranja); color:white; font-weight:bold;' : '';
                                     return `<div class="col-tabela" style="${estiloCelula}">${idx === 0 ? `<strong>${v}</strong>` : v}</div>`;
                                 }).join('')}
                             </div>`;
@@ -445,18 +426,32 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
                 ${materiaisHtml}
             </div>`;
         }
-    } else {
-        html += `<div class="titulo-vitrine-faixa faixa-preta">${selecionado.nomeFull.toUpperCase()} — ${selecionado.regiao}</div>`;
-        html += `<div class="box-complexo-full">
+} else {
+        // Cores de Título que combinam com os novos botões de complexo
+        let corComplexo = "#333";
+        if (selecionado.zona === 'ZO') corComplexo = "#ff9d42"; // O novo laranja claro
+        else if (selecionado.zona === 'ZL') corComplexo = "#003399";
+        else if (selecionado.zona === 'ZN') corComplexo = "#ffd700";
+        else if (selecionado.zona === 'ZS') corComplexo = "#ff33aa";
+
+        // Cor do texto do título (preto para amarelo, branco para os outros)
+        let corTexto = (selecionado.zona === 'ZN') ? "#333" : "white";
+
+        html += `<div class="titulo-vitrine-faixa" style="background-color: ${corComplexo}; color: ${corTexto}; padding: 8px; font-weight: bold; text-align: center; margin-bottom: 5px; border-radius: 4px; font-size: 0.8rem;">
+                    ${selecionado.nomeFull.toUpperCase()} — ${selecionado.regiao}
+                 </div>`;
+                 
+        html += `<div class="box-complexo-full" style="border: 1px solid ${corComplexo}; border-radius: 4px; padding: 10px; background: #fff;">
                     <p style="font-size:0.7rem; color:#444; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                         <span>📍 ${selecionado.endereco}</span> 
                         <span style="display:flex; gap:3px;">
                             <a href="${urlMapsResidencial}" target="_blank" class="btn-maps">MAPS</a>
-                            <button onclick="copiarTexto('${urlMapsResidencial}')" class="btn-maps" style="background:#444; border:none;">LINK</button>
+                            <button onclick="copiarTexto('${urlMapsResidencial}')" class="btn-maps" style="background:#444; border:none; color:white; cursor:pointer; border-radius:3px; padding: 2px 6px;">LINK</button>
                         </span>
                     </p>
                     <div style="font-size:0.75rem; color:#444; line-height:1.5; text-align:justify;">${selecionado.descLonga}</div>
                  </div>`;
+                 
         let materiaisComplexo = extrairLinks(selecionado.linksImplant, '📍');
         if (materiaisComplexo !== "") {
             html += `<div style="margin-top: 10px; padding: 0 5px;">
@@ -467,6 +462,9 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     }
     painel.innerHTML = html;
 }
+
+
+
 /* ==========================================================================
    BLOCO 08: LÓGICA DO MODAL (SOBRE)
    ========================================================================== */
