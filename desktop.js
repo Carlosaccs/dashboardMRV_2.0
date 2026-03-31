@@ -264,15 +264,20 @@ const criarCardMaterial = (titulo, url, icone) => {
             <span class="card-icon">${icone}</span>
             <span class="card-text">${titulo}</span>
         </div>
-        <div class="card-preview-box">
-            <iframe src="${linkSeguro}" scrolling="no"></iframe>
-        </div>
         <div class="card-actions-bottom">
-            <a href="${linkSeguro}" target="_blank" class="card-btn-abrir">Abrir</a>
+            <div class="btn-hover-wrapper">
+                <a href="${linkSeguro}" target="_blank" class="card-btn-abrir">
+                    Abrir
+                    <div class="card-preview-hover">
+                        <iframe src="${linkSeguro}" scrolling="no"></iframe>
+                    </div>
+                </a>
+            </div>
             <button onclick="copiarLink('${url}')" class="card-btn-copiar">Copiar</button>
         </div>
     </div>`;
 };
+
 const extrairLinks = (campo, icone) => {
     if(!campo || campo === "---") return "";
     let htmlTemp = "";
@@ -359,6 +364,7 @@ function montarVitrine(selecionado, listaDaCidade, nomeRegiao) {
     }
     painel.innerHTML = html;
 }
+
 
 /* ==========================================================================
    BLOCO 08: LÓGICA DO MODAL E INICIALIZAÇÃO
