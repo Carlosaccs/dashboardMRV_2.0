@@ -3,210 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard MRV SP - Mobile v5.0</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* Ajustes específicos para a experiência Mobile */
-        body, html { height: 100vh; width: 100vw; overflow: hidden; display: flex; }
-        
-        /* Barra lateral fixa para o título */
-        .sidebar-titulo { 
-            background: var(--mrv-verde); 
-            width: 35px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 15px 0; 
-            color: white; 
-            flex-shrink: 0;
-        }
-        .titulo-vertical { 
-            writing-mode: vertical-rl; 
-            transform: rotate(180deg); 
-            text-transform: uppercase; 
-            font-size: 0.6rem; 
-            font-weight: bold; 
-            letter-spacing: 1px;
-        }
-
-        .main-wrapper { display: flex; flex: 1; height: 100vh; overflow: hidden; }
-
-        /* Coluna da Esquerda: Lista de Residenciais */
-        .col-lista { 
-            width: 28%; 
-            background: var(--cinza-fundo); 
-            overflow-y: auto; 
-            padding: 5px; 
-            border-right: 1px solid var(--cinza-borda); 
-            scroll-behavior: smooth;
-        }
-        
-        /* Ajuste de tamanho dos botões para telas pequenas */
-        .btRes { 
-            padding: 8px 4px; 
-            font-size: 0.55rem; 
-            min-height: 45px;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        .btRes strong { font-size: 0.55rem; line-height: 1.1; margin-bottom: 2px; }
-
-        /* Coluna Central: Mapa */
-        .col-central { 
-            flex: 1; 
-            display: flex; 
-            flex-direction: column; 
-            position: relative; 
-            background: #fff;
-        }
-        .centro-topo { 
-            height: 30px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-weight: bold; 
-            font-size: 0.65rem; 
-            background: #fdfdfd; 
-            border-bottom: 1px solid #eee; 
-            text-align: center;
-        }
-        .mapa-container { flex: 1; position: relative; overflow: hidden; }
-
-        /* Coluna da Direita: Ficha Técnica */
-        .col-ficha { 
-            width: 35%; 
-            padding: 8px; 
-            overflow-y: auto; 
-            border-left: 1px solid var(--cinza-borda); 
-            background: #fff;
-        }
-        
-        .ficha-header { font-size: 0.7rem; color: var(--mrv-verde); font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }
-        .bairro-info { font-size: 0.55rem; color: #666; margin-bottom: 8px; display: block; }
-        
-        .ficha-grid { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
-        .grid-item { 
-            font-size: 0.55rem; 
-            background: #f9f9f9; 
-            padding: 5px; 
-            border: 1px solid #eee; 
-            border-radius: 3px;
-        }
-        .grid-item strong { color: #888; font-size: 0.45rem; text-transform: uppercase; display: block; }
-
-        .btn-mini { 
-            display: block; 
-            width: 100%; 
-            text-align: center; 
-            padding: 10px 0; 
-            background: var(--mrv-verde); 
-            color: white; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            font-size: 0.6rem; 
-            margin-top: 5px; 
-            font-weight: bold; 
-        }
-
-        /* Aviso de rotação para mobile */
-        #aviso-orientacao {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: var(--mrv-verde); color: white; z-index: 10000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px;
-        }
-        @media (orientation: portrait) { #aviso-orientacao { display: flex; } }
-    </style>
+    <title>Residenciais MRV - Dashboard Mobile</title>
+    <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
 
-    <div id="aviso-orientacao">
-        <div style="font-size: 40px; margin-bottom: 15px;">🔄</div>
-        <h2>Gire o celular</h2>
-        <p>Use o dashboard na horizontal para uma melhor visualização dos mapas.</p>
-    </div>
-
-    <div class="sidebar-titulo">
-        <span style="font-size: 10px;">☰</span>
-        <div class="titulo-vertical">DASHBOARD MRV SP</div>
-        <span style="font-size: 10px;">©</span>
-    </div>
-
-    <div class="main-wrapper">
-        <aside class="col-lista" id="lista-imoveis"></aside>
+    <div class="mobile-wrapper">
         
-        <main class="col-central">
-            <div class="centro-topo" id="display-nome">Selecione uma cidade</div>
-            <div class="mapa-container" id="caixa-a"></div>
+            <aside class="faixa-verde-vertical">
+                <div class="icon-top" id="btn-menu" style="cursor:pointer;">
+                    <svg viewBox="35 130 70 55" width="28" height="28">
+                        <path fill="white" d="M 39.911259 134.69049 L 39.911259 137.57403 L 39.911259 140.45706 L 69.950769 140.45706 L 99.990796 140.45706 L 99.990796 137.57403 L 99.990796 134.69049 L 69.950769 134.69049 L 39.911259 134.69049 z M 39.911259 153.33121 L 39.911259 156.14757 L 39.911259 158.96394 L 69.950769 158.96394 L 99.990796 158.96394 L 99.990796 156.14757 L 99.990796 153.33121 L 69.950769 153.33121 L 39.911259 153.33121 z M 39.911259 171.83809 L 39.911259 174.72112 L 39.911259 177.60466 L 69.950769 177.60466 L 99.990796 177.60466 L 99.990796 174.72112 L 99.990796 171.83809 L 69.950769 171.83809 L 39.911259 171.83809 z " />
+                    </svg>
+                </div>
+            
+                <div class="titulo-vertical">MRV Dashboard v141.3.0</div>
+            
+                <div class="icon-bottom" id="btn-fullscreen" style="cursor:pointer;">
+                    <svg id="svg-expandir" viewBox="60 110 90 90" width="30" height="30">
+                        <path fill="white" d="M 75.757133 114.16926 L 75.757133 124.7898 L 75.757133 135.41086 L 78.412268 135.41086 L 81.067403 135.41086 L 81.067403 127.44493 L 81.067403 119.47953 L 89.032808 119.47953 L 96.99873 119.47953 L 96.99873 116.82439 L 96.99873 114.16926 L 86.377673 114.16926 L 75.757133 114.16926 z M 115.58468 114.16926 L 115.58468 116.82439 L 115.58468 119.47953 L 123.36043 119.47953 L 131.13618 119.47953 L 131.13618 127.44493 L 131.13618 135.41086 L 133.79183 135.41086 L 136.44697 135.41086 L 136.44697 124.7898 L 136.44697 114.16926 L 126.01556 114.16926 L 115.58468 114.16926 z M 75.757133 153.9968 L 75.757133 164.61734 L 75.757133 175.2384 L 86.377673 175.2384 L 96.99873 175.2384 L 96.99873 172.39361 L 96.99873 169.54882 L 89.032808 169.54882 L 81.067403 169.54882 L 81.067403 161.77255 L 81.067403 153.9968 L 78.412268 153.9968 L 75.757133 153.9968 z M 131.13618 153.9968 L 131.13618 161.77255 L 131.13618 169.54882 L 123.36043 169.54882 L 115.58468 169.54882 L 115.58468 172.39361 L 115.58468 175.2384 L 126.01556 175.2384 L 136.44697 175.2384 L 136.44697 164.61734 L 136.44697 153.9968 L 133.79183 153.9968 L 131.13618 153.9968 z " />
+                    </svg>
+            
+                    <svg id="svg-recolher" viewBox="60 110 90 90" width="30" height="30" style="display:none;">
+                        <path fill="white" d="M 78.408134 124.88437 L 78.408134 132.66012 L 78.408134 140.43587 L 70.442729 140.43587 L 62.476807 140.43587 L 62.476807 143.28066 L 62.476807 146.12596 L 73.097864 146.12596 L 83.718404 146.12596 L 83.718404 135.50491 L 83.718404 124.88437 L 81.063269 124.88437 L 78.408134 124.88437 z M 102.30435 124.88437 L 102.30435 135.50491 L 102.30435 146.12596 L 112.92541 146.12596 L 123.54595 146.12596 L 123.54595 143.28066 L 123.54595 140.43587 L 115.58054 140.43587 L 107.61514 140.43587 L 107.61514 132.66012 L 107.61514 124.88437 L 104.96 124.88437 L 102.30435 124.88437 z M 62.476807 164.3326 L 62.476807 167.17739 L 62.476807 170.02218 L 70.442729 170.02218 L 78.408134 170.02218 L 78.408134 177.79793 L 78.408134 185.5742 L 81.063269 185.5742 L 83.718404 185.5742 L 83.718404 174.95315 L 83.718404 164.3326 L 73.097864 164.3326 L 62.476807 164.3326 z M 102.30435 164.3326 L 102.30435 174.95315 L 102.30435 185.5742 L 104.96 185.5742 L 107.61514 185.5742 L 107.61514 177.79793 L 107.61514 170.02218 L 115.58054 170.02218 L 123.54595 170.02218 L 123.54595 167.17739 L 123.54595 164.3326 L 112.92541 164.3326 L 102.30435 164.3326 z " />
+                    </svg>
+                </div>
+            </aside>
+            <nav id="menu-lateral" class="menu-oculto">
+                <ul class="menu-lista" id="lista-residenciais"></ul>
+            </nav>
+
+        <main id="mapa-container">
+            <p style="color: #999; font-size: 0.9rem;">Carregando Mapa...</p>
         </main>
 
-        <aside class="col-ficha" id="ficha-tecnica">
-            <div style="text-align: center; color: #ccc; margin-top: 40%; font-size: 0.6rem;">Toque em um ponto no mapa ou na lista lateral.</div>
-        </aside>
+        <div id="identificador-cidade"></div>
+        <div id="mapa-minimizado" title="Clique para trocar o mapa"></div>
+
+        
+        <section class="ficha-tecnica">
+            <div id="container-vitrine-botoes"></div>
+            
+            <h2 id="nome-imovel"></h2>
+            <div id="detalhes-imovel">
+                <p>Toque em uma cidade para ver os detalhes.</p>
+            </div>
+        </section>
+        
+
     </div>
 
-    <div id="toast">Copiado!</div>
+    <script src="mapa-SP.js"></script> 
+    <script src="mobile.js"></script>
 
-    <script src="mrv-data.js"></script>
-    <script src="mrv-engine.js"></script>
-    <script>
-        // Versão Mobile da lista lateral
-        function gerarListaLateral() {
-            const list = document.getElementById('lista-imoveis');
-            list.innerHTML = "";
-            DADOS_PLANILHA.forEach(item => {
-                if (item.tipo === 'N') {
-                    const div = document.createElement('div');
-                    div.className = 'item-grupo';
-                    div.innerText = item.nome;
-                    list.appendChild(div);
-                } else {
-                    const btn = document.createElement('button');
-                    btn.className = `btRes tipo-${item.tipo}`;
-                    // ID exato para o motor encontrar o botão via clique no mapa
-                    btn.id = `btn-esq-${item.nome.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                    btn.innerHTML = `<strong>${item.nome}</strong> ${obterHtmlEstoque(item.estoque, item.tipo)}`;
-                    btn.onclick = () => selecionar(item, btn);
-                    list.appendChild(btn);
-                }
-            });
-            desenharIniciais();
-        }
-
-        // Função de seleção adaptada para Mobile
-        function selecionar(item, btn) {
-            // 1. Limpa seleções anteriores na lista
-            document.querySelectorAll('.btRes').forEach(b => b.classList.remove('ativo'));
-            
-            // 2. Destaca o botão atual e faz scroll automático até ele
-            if(btn) {
-                btn.classList.add('ativo');
-                btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-            
-            // 3. Destaca no Mapa (via motor engine)
-            const path = document.getElementById(item.id_path);
-            if(path && typeof destacarNoMapa === 'function') {
-                destacarNoMapa(path);
-            }
-
-            // 4. Preenche a Ficha Técnica
-            document.getElementById('ficha-tecnica').innerHTML = `
-                <div class="ficha-header">${item.nome}</div>
-                <span class="bairro-info">📍 ${item.bairro}</span>
-                <div class="ficha-grid">
-                    <div class="grid-item"><strong>Preço:</strong> ${item.preco}</div>
-                    <div class="grid-item"><strong>Entrega:</strong> ${item.entrega}</div>
-                    <div class="grid-item"><strong>Status:</strong> ${item.obra}% de obra</div>
-                </div>
-                ${item.dica ? `<div style="font-size:0.5rem; background:#fff5e6; padding:4px; border-radius:3px; margin-bottom:5px;">${item.dica}</div>` : ''}
-                <a href="${item.links.bookCli}" target="_blank" class="btn-mini">📄 Book Cliente</a>
-                <a href="${item.links.vid1}" target="_blank" class="btn-mini" style="background:var(--mrv-laranja)">🎥 Vídeo 1</a>
-            `;
-        }
-
-        window.onload = iniciarApp;
-    </script>
 </body>
 </html>
