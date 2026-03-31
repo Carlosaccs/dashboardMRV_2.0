@@ -330,3 +330,48 @@ document.addEventListener('click', (e) => {
     }
     if (e.target.closest('#mapa-minimizado')) trocarMapas();
 });
+
+Exatamente, Carlos. Seguindo a organização que estamos mantendo para o seu DashboardMRV 2.0, esse código se encaixa perfeitamente como o Bloco 7.
+
+Como a sua versão v141.3.0 termina no Bloco 6 (Menu Lateral e Inicialização), adicionar este novo bloco ao final do arquivo mantém o código limpo e fácil de dar manutenção depois.
+
+Aqui está o código completo do Bloco 7, já formatado para você apenas copiar e colar no final do seu arquivo mobile.js:
+
+JavaScript
+
+/* --------------------------------------------------------------------------
+   7. CONTROLE DE ORIENTAÇÃO (AVISO PAISAGEM) E ENTRADA
+   -------------------------------------------------------------------------- */
+
+/**
+ * Função acionada pelo botão na tela verde de aviso.
+ * Tenta colocar o app em tela cheia e "travar" a orientação.
+ */
+function fecharAvisoEAmpliar() {
+    // 1. Aciona o Fullscreen usando sua função existente no Bloco 2
+    solicitarFullscreen();
+
+    // 2. Tenta forçar o modo paisagem via API do navegador
+    // Nota: Funciona principalmente em Android + Chrome
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function(error) {
+            console.log("A trava de tela automática foi ignorada pelo sistema.");
+        });
+    }
+
+    // 3. Esconde o aviso manualmente para garantir a entrada imediata
+    const aviso = document.getElementById('aviso-orientacao');
+    if (aviso) {
+        aviso.style.display = 'none';
+    }
+}
+
+/**
+ * Ouvinte de evento para garantir que, se o usuário sair do Fullscreen
+ * e o celular estiver em pé, a tela de aviso possa ser gerenciada.
+ */
+window.addEventListener("orientationchange", function() {
+    // O CSS (@media orientation) já cuida da maior parte visual,
+    // mas este ouvinte pode ser usado para ajustes extras de JS se necessário.
+    console.log("Mudança de orientação detectada: " + screen.orientation.angle);
+});
