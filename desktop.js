@@ -260,14 +260,19 @@ const criarCardMaterial = (titulo, url, icone) => {
     const linkSeguro = formatarLinkSeguro(url);
     return `
     <div class="card-material-item">
-        <div class="card-material-left"><span class="card-icon">${icone}</span><span class="card-text">${titulo}</span></div>
-        <div class="card-material-right">
-            <div class="btn-com-preview"><a href="${linkSeguro}" target="_blank" class="card-btn-abrir">Abrir</a><div class="preview-container"><iframe src="${linkSeguro}"></iframe></div></div>
+        <div class="card-info-top">
+            <span class="card-icon">${icone}</span>
+            <span class="card-text">${titulo}</span>
+        </div>
+        <div class="card-preview-box">
+            <iframe src="${linkSeguro}" scrolling="no"></iframe>
+        </div>
+        <div class="card-actions-bottom">
+            <a href="${linkSeguro}" target="_blank" class="card-btn-abrir">Abrir</a>
             <button onclick="copiarLink('${url}')" class="card-btn-copiar">Copiar</button>
         </div>
     </div>`;
 };
-
 const extrairLinks = (campo, icone) => {
     if(!campo || campo === "---") return "";
     let htmlTemp = "";
