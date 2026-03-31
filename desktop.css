@@ -217,33 +217,63 @@ path.commrv:hover, path.ativo { fill: var(--mrv-laranja) !important; stroke: #00
 .sidebar-dir div[style*="border-left"] strong { font-size: 12px !important; }
 
 /* ==========================================================================
-   7. TABELAS E CARDS
+   7. TABELAS E CARDS - AJUSTE CIRÚRGICO MINIATURAS
    ========================================================================== */
-.tabela-precos-container { width: 100%; background: var(--cinza-claro); border-radius: 4px; margin: 10px 0; border: 1px solid #ddd; overflow: hidden; }
-.tabela-header { background: #eee; font-weight: bold; font-size: 0.65rem; min-height: 30px; display: flex; align-items: center; }
-.tabela-row { display: flex; background: #fff; font-size: 0.7rem; border-bottom: 1px solid #eee; min-height: 30px; align-items: center; }
-.col-tabela { flex: 1; padding: 5px; text-align: center; border-right: 1px solid #eee; }
-
 .card-material-item { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; 
-    padding: 8px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+    background: #fff; 
+    border: 1px solid #e0e0e0; 
+    border-radius: 8px; 
+    padding: 10px; 
+    margin-bottom: 12px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
-.card-text { font-size: 0.7rem; font-weight: 600; color: #333; }
 
-.card-btn-abrir { background: var(--mrv-verde); }
-.card-btn-copiar { background: var(--mrv-laranja); }
+.card-info-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-preview-box {
+    width: 100%;
+    height: 160px; /* Altura fixa para a miniatura não esmagar */
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f0f0f0;
+    border: 1px solid #eee;
+}
+
+.card-preview-box iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.card-actions-bottom {
+    display: flex;
+    gap: 5px;
+}
+
 .card-btn-abrir, .card-btn-copiar { 
-    width: 70px; height: 26px; display: flex; align-items: center; justify-content: center;
-    font-size: 0.65rem; font-weight: bold; border-radius: 4px; color: #fff; border: none; cursor: pointer; 
+    flex: 1; /* Faz os dois botões terem o mesmo tamanho lado a lado */
+    height: 28px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 0.65rem; 
+    font-weight: bold; 
+    border-radius: 4px; 
+    color: #fff; 
+    border: none; 
+    cursor: pointer;
+    text-decoration: none;
 }
 
-/* ==========================================================================
-   8. MODAL E SCROLL
-   ========================================================================== */
-.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
-.modal-content { background-color: white; margin: 8% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; position: relative; }
+.card-btn-abrir { background: var(--mrv-verde) !important; }
+.card-btn-copiar { background: var(--mrv-laranja) !important; }
 
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #f1f1f1; }
-::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+.card-text { font-size: 0.75rem; font-weight: bold; color: #333; }
+.card-icon { font-size: 1rem; }
