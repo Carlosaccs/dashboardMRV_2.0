@@ -12,9 +12,9 @@
 
     /* Cores das Zonas (Padrão MRV SP) */
     --mrv-zo: #f37021; 
-    --mrv-zl: #e31c19; /* Vermelho forte */
-    --mrv-zn: #0054a6; /* Azul */
-    --mrv-zs: #d1147e; /* Rosa/Pink */
+    --mrv-zl: #e31c19; 
+    --mrv-zn: #0054a6; 
+    --mrv-zs: #d1147e; 
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -45,48 +45,28 @@ body {
 }
 
 #btn-sobre {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255,255,255,0.2);
-    border: 1px solid white;
-    color: white;
-    padding: 6px 18px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: bold;
-    transition: all 0.2s;
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.2); border: 1px solid white; color: white;
+    padding: 6px 18px; border-radius: 20px; cursor: pointer; font-size: 0.85rem;
+    font-weight: bold; transition: all 0.2s;
 }
-
-#btn-sobre:hover { background: white; color: var(--mrv-verde); }
 
 /* ==========================================================================
    3. ESTRUTURA PRINCIPAL
    ========================================================================== */
-.wrapper { 
-    display: flex; 
-    flex: 1; 
-    height: calc(100vh - 60px); 
-    overflow: hidden; 
-}
+.wrapper { display: flex; flex: 1; height: calc(100vh - 60px); overflow: hidden; }
 
 /* ==========================================================================
    4. SIDEBAR ESQUERDA (LISTA)
    ========================================================================== */
 .sidebar-esq { 
-    width: 280px; 
-    border-right: 1px solid #ddd; 
-    overflow-y: auto; 
-    padding: 10px 0; 
-    background: #f8f9fa; 
-    flex-shrink: 0; 
+    width: 280px; border-right: 1px solid #ddd; overflow-y: auto; 
+    padding: 10px 0; background: #f8f9fa; flex-shrink: 0; 
 }
 
-/* Base comum para botões */
+/* Base comum para botões (Lista e Vitrine) */
 .btRes, .separador-complexo-btn {
-    width: 92% !important; 
+    width: 95% !important; 
     margin: 4px auto !important; 
     min-height: 32px;
     display: flex !important; 
@@ -103,17 +83,18 @@ body {
 .btRes { 
     background: #fff; 
     border: 1px solid #ddd;
-    border-left: 6px solid var(--mrv-verde) !important; /* Tarja na ESQUERDA */
+    border-left: none !important; /* Garante que não tenha na esquerda */
+    border-right: 6px solid var(--mrv-verde) !important; /* TARJA NA DIREITA */
     justify-content: space-between; 
     color: #333; 
 }
 
-/* Cores das Tarjas Esquerdas */
-.btRes.btn-zo { border-left-color: var(--mrv-zo) !important; }
-.btRes.btn-zl { border-left-color: var(--mrv-zl) !important; }
-.btRes.btn-zn { border-left-color: var(--mrv-zn) !important; }
-.btRes.btn-zs { border-left-color: var(--mrv-zs) !important; }
-.btRes.btn-verde { border-left-color: var(--mrv-verde) !important; }
+/* Cores das Tarjas DIREITAS */
+.btRes.btn-zo { border-right-color: var(--mrv-zo) !important; }
+.btRes.btn-zl { border-right-color: var(--mrv-zl) !important; }
+.btRes.btn-zn { border-right-color: var(--mrv-zn) !important; }
+.btRes.btn-zs { border-right-color: var(--mrv-zs) !important; }
+.btRes.btn-verde { border-right-color: var(--mrv-verde) !important; }
 
 .btRes:hover { background-color: #f0f0f0 !important; }
 .btRes.ativo { 
@@ -122,56 +103,30 @@ body {
     border: 1px solid var(--mrv-laranja) !important; 
 }
 
-/* --- ESTILO DOS COMPLEXOS (Fundo Colorido) --- */
+/* --- ESTILO DOS COMPLEXOS (Fundo Colorido - Lista e Ficha) --- */
 .separador-complexo-btn { 
-    background: #333 !important; /* Cor padrão caso falhe a zona */
     color: white !important; 
     justify-content: center !important; 
     font-weight: bold; 
     text-transform: uppercase; 
     border: none !important; 
+    text-align: center;
 }
 
-/* Cores de Fundo Total para Complexos */
+/* Cores de Fundo Total para Complexos (Geral) */
 .separador-complexo-btn.btn-zo { background-color: var(--mrv-zo) !important; }
 .separador-complexo-btn.btn-zl { background-color: var(--mrv-zl) !important; }
 .separador-complexo-btn.btn-zn { background-color: var(--mrv-zn) !important; }
 .separador-complexo-btn.btn-zs { background-color: var(--mrv-zs) !important; }
-.separador-complexo-btn.btn-verde { background-color: var(--mrv-verde) !important; }
+.separador-complexo-btn.btn-verde, .separador-complexo-btn { background-color: var(--mrv-verde) !important; }
 
 /* ==========================================================================
-   5. CENTRO (MAPAS)
+   5. CENTRO E MAPAS
    ========================================================================== */
 .conteudo-centro { flex: 1; display: flex; flex-direction: column; background: #fff; overflow: hidden; }
-
-#cidade-titulo { 
-    background: #eee; 
-    padding: 4px; 
-    text-align: center; 
-    font-weight: bold; 
-    font-size: 0.85rem; 
-    color: #555; 
-    height: 30px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    text-transform: uppercase; 
-}
-
+#cidade-titulo { background: #eee; padding: 4px; text-align: center; font-weight: bold; font-size: 0.85rem; color: #555; height: 30px; display: flex; align-items: center; justify-content: center; text-transform: uppercase; }
 #caixa-a { flex: 2; display: flex; align-items: center; justify-content: center; padding: 15px; overflow: hidden; }
-#caixa-b { 
-    flex: 0.4; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 5px; 
-    border-top: 1px solid #eee; 
-    cursor: pointer; 
-    background: #fff; 
-    min-height: 120px; 
-    max-height: 160px; 
-}
-
+#caixa-b { flex: 0.4; display: flex; align-items: center; justify-content: center; padding: 5px; border-top: 1px solid #eee; cursor: pointer; background: #fff; min-height: 120px; max-height: 160px; }
 svg { width: 100%; height: 100%; }
 path { fill: var(--cinza-mapa); stroke: #fff; stroke-width: 0.8; transition: fill 0.2s, stroke-width 0.2s; }
 path:hover { fill: #999 !important; cursor: pointer; }
@@ -182,37 +137,12 @@ path.commrv:hover, path.ativo { fill: var(--mrv-laranja) !important; stroke: #00
    6. SIDEBAR DIREITA (VITRINE)
    ========================================================================== */
 .sidebar-dir { width: 480px; border-left: 1px solid #ddd; overflow-y: auto; padding: 12px; flex-shrink: 0; }
-
-.vitrine-topo { 
-    background: var(--mrv-verde); 
-    color: white; 
-    padding: 8px; 
-    text-align: center; 
-    font-weight: bold; 
-    border-radius: 4px; 
-    margin-bottom: 8px; 
-    font-size: 0.85rem; 
-    text-transform: uppercase; 
-}
-
-.titulo-vitrine-faixa { 
-    display: flex !important; 
-    align-items: center !important; 
-    justify-content: center !important; 
-    width: 100% !important; 
-    height: 34px !important; 
-    font-weight: bold !important; 
-    font-size: 0.85rem !important; 
-    border-radius: 4px; 
-    text-transform: uppercase; 
-    color: #fff; 
-    margin-bottom: 8px; 
-}
-
+.vitrine-topo { background: var(--mrv-verde); color: white; padding: 8px; text-align: center; font-weight: bold; border-radius: 4px; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; }
+.titulo-vitrine-faixa { display: flex !important; align-items: center !important; justify-content: center !important; width: 100% !important; height: 34px !important; font-weight: bold !important; font-size: 0.85rem !important; border-radius: 4px; text-transform: uppercase; color: #fff; margin-bottom: 8px; }
 .faixa-laranja { background: var(--mrv-laranja) !important; }
 .faixa-preta { background: var(--mrv-preto) !important; }
 
-/* Ajuste das caixas de texto na vitrine */
+/* Caixas de Texto da Vitrine */
 .sidebar-dir div[style*="border-left"] { font-size: 14px !important; line-height: 1.4 !important; }
 .sidebar-dir div[style*="border-left"] strong { font-size: 12px !important; }
 
@@ -223,27 +153,17 @@ path.commrv:hover, path.ativo { fill: var(--mrv-laranja) !important; stroke: #00
 .tabela-header { background: #eee; font-weight: bold; font-size: 0.65rem; min-height: 30px; display: flex; align-items: center; }
 .tabela-row { display: flex; background: #fff; font-size: 0.7rem; border-bottom: 1px solid #eee; min-height: 30px; align-items: center; }
 .col-tabela { flex: 1; padding: 5px; text-align: center; border-right: 1px solid #eee; }
-
-.card-material-item { 
-    display: flex; justify-content: space-between; align-items: center; 
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; 
-    padding: 8px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
-}
+.card-material-item { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 .card-text { font-size: 0.7rem; font-weight: 600; color: #333; }
-
 .card-btn-abrir { background: var(--mrv-verde); }
 .card-btn-copiar { background: var(--mrv-laranja); }
-.card-btn-abrir, .card-btn-copiar { 
-    width: 70px; height: 26px; display: flex; align-items: center; justify-content: center;
-    font-size: 0.65rem; font-weight: bold; border-radius: 4px; color: #fff; border: none; cursor: pointer; 
-}
+.card-btn-abrir, .card-btn-copiar { width: 70px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: bold; border-radius: 4px; color: #fff; border: none; cursor: pointer; }
 
 /* ==========================================================================
    8. MODAL E SCROLL
    ========================================================================== */
 .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); }
 .modal-content { background-color: white; margin: 8% auto; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; position: relative; }
-
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
